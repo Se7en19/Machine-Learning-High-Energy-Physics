@@ -8,6 +8,7 @@ Numero de eventos en la segunda simulacion: 40 Eventos
 
 # Resultados 
 ![Imagen_1](img/img1.jpeg)
+<<<<<<< HEAD
 
 ![Imagen_2](img/img2.jpeg)
 
@@ -19,4 +20,3 @@ Numero de eventos en la segunda simulacion: 40 Eventos
 
 ![Imagen_6](img/img6.jpeg)
 
-![Imagen_7](img/img7.jpeg)
