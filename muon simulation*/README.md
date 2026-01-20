@@ -7,10 +7,10 @@ Numero de eventos en la primera simulacion: 20 Eventos
 Numero de eventos en la segunda simulacion: 40 Eventos 
 
 # Resultados 
-![Imagen_1](/home/relka/Documentos/Machine Learning High Energy Physics/rama testing/Machine-Learning-High-Energy-Physics/muon simulation*/img/img1.jpeg)
-![Imagen_2](/home/relka/Documentos/Machine Learning High Energy Physics/rama testing/Machine-Learning-High-Energy-Physics/muon simulation*/img/img2.jpeg)
-![Imagen_3](/home/relka/Documentos/Machine Learning High Energy Physics/rama testing/Machine-Learning-High-Energy-Physics/muon simulation*/img/img3.jpeg)
-![Imagen_4](/home/relka/Documentos/Machine Learning High Energy Physics/rama testing/Machine-Learning-High-Energy-Physics/muon simulation*/img/img4.jpeg)
-![Imagen_5](/home/relka/Documentos/Machine Learning High Energy Physics/rama testing/Machine-Learning-High-Energy-Physics/muon simulation*/img/img5.jpeg)
-![Imagen_6](/home/relka/Documentos/Machine Learning High Energy Physics/rama testing/Machine-Learning-High-Energy-Physics/muon simulation*/img/img6.jpeg)
-![Imagen_7](/home/relka/Documentos/Machine Learning High Energy Physics/rama testing/Machine-Learning-High-Energy-Physics/muon simulation*/img/img7.jpeg)
+![Imagen_1](/img/img1.jpeg)
+![Imagen_2](/img/img2.jpeg)
+![Imagen_3](/img/img3.jpeg)
+![Imagen_4](/img/img4.jpeg)
+![Imagen_5](/img/img5.jpeg)
+![Imagen_6](/img/img6.jpeg)
+![Imagen_7](/img/img7.jpeg)
