@@ -6,6 +6,8 @@ Energia en la segunda simulacion: 30 GeV
 Numero de eventos en la primera simulacion: 20 Eventos 
 Numero de eventos en la segunda simulacion: 40 Eventos 
 
+##
+
 In this week (19-January-2026)  two simulations were performed using muons with negative charge (\mu -). Since Geant4 gives us different examples for running simulations, two examples were used to obtain a better analysis.
 
 For the first simulation, the example called " B1" was used for this case. The parameters used during this simulation were the following: 
