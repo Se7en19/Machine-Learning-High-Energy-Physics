@@ -1,0 +1,25 @@
+# Script basico para iniciar una simulacion de muones
+# con carga electrica negativa.
+# Se ha utilizado el ejemplo B1 para esta simulacion
+# agregando nuestros propios parametros.
+
+## Inicializar el nucleo
+/run/initialize
+
+## Configuracion del programa
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+## Configuracion del sistema
+
+# Particula
+/gun/particle mu-
+
+# Energia
+/gun/energy 10 GeV 
+
+## Lanzamiento
+/run/printProgress 10 #(segundos)
+/run/beamOn 20 
