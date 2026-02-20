@@ -1,0 +1,13 @@
+# Carpetas de compilación
+simulation_pi/build/
+bin/
+obj/
+
+# Archivos de salida de ROOT y datos
+*.root
+*.out
+*.log
+
+# Archivos temporales de sistema
+.DS_Store
+Thumbs.db
