@@ -1,0 +1,31 @@
+# run_dedx.mac
+# Barre el momento del muón de 0.1 GeV/c a 2 GeV/c
+
+/run/initialize
+
+# Usar muón negativo
+/gun/particle mu-
+
+# Barrido de energía cinética (Geant4 usa Ekin, no p)
+# mu- : masa = 105.66 MeV/c²
+
+/gun/energy 50 MeV
+/run/beamOn 500
+
+/gun/energy 100 MeV
+/run/beamOn 500
+
+/gun/energy 200 MeV
+/run/beamOn 500
+
+/gun/energy 500 MeV
+/run/beamOn 500
+
+/gun/energy 1000 MeV
+/run/beamOn 500
+
+/gun/energy 2000 MeV
+/run/beamOn 500
+
+/gun/energy 5000 MeV
+/run/beamOn 500
