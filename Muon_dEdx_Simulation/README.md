@@ -84,12 +84,26 @@ Por evento:
 
 ## 5. Detección sensible y reconstrucción por evento
 
-### 5.1 Hits (paso a paso)
+### 5.1 Definición de hit en esta simulación
 
-En [`src/TrackerSD.cc`](src/TrackerSD.cc), para cada paso en cámaras sensibles:
+En [`src/TrackerSD.cc`](src/TrackerSD.cc), un `hit` se define de forma operacional como un paso de tracking dentro de un volumen sensible `Chamber_LV` que cumple simultáneamente:
 
-- se ignoran pasos con `Edep == 0` o `stepLength == 0`;
-- se registra `trackID`, `chamberNb`, `Edep`, posición, longitud de paso, momento pre-step y carga.
+- `Edep > 0` (depósito de energía no nulo en el paso);
+- `stepLength > 0` (longitud geométrica de paso no nula).
+
+Si una de esas dos condiciones falla, el paso no genera hit y se descarta.
+
+Cuando sí se genera hit, el objeto `TrackerHit` almacena:
+
+- `trackID`;
+- `chamberNb` (copy number de la cámara);
+- `Edep`;
+- `stepLength`;
+- `pos` (posición post-step);
+- `momentum` en `PreStepPoint`;
+- `charge` de la partícula.
+
+Implicación importante: en este diseño, un hit no corresponde a "una partícula cruza una cámara", sino a "un paso válido del integrador de Geant4 dentro de una cámara sensible". Por ello, una misma traza puede producir múltiples hits por cámara.
 
 ### 5.2 Reducción a observables por cámara
 
@@ -134,6 +148,20 @@ El macro ROOT [`analysis/plot_dedx.C`](analysis/plot_dedx.C) genera:
 - mapa espacial/fallback por cámara
 
 Incluye una función analítica de Bethe-Bloch con parámetros efectivos de Xenón gaseoso para superposición cualitativa con la simulación.
+
+### 7.1 Imágenes representativas
+
+`dE/dx` en función de `p/q`:
+
+![dE/dx vs p/q](img/dedx_vs_pq.png)
+
+`dE/dx` en función de `beta`:
+
+![dE/dx vs beta](img/dedx_vs_beta.png)
+
+`dE/dx` en función de `beta*gamma`:
+
+![dE/dx vs beta*gamma](img/dedx_vs_betagamma.png)
 
 ## 8. Flujo de ejecución recomendado
 
