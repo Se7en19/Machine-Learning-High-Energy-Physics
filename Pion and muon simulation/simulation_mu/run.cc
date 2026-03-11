@@ -23,6 +23,8 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
  	man->CreateNtupleDColumn("TOF");   
 	man->CreateNtupleDColumn("TrackLength");   
 	man->CreateNtupleDColumn("ScatteringAng");
+	man->CreateNtupleDColumn("Momentum");
+	man->CreateNtupleDColumn("Charge");
 	man->FinishNtuple(0);
 }
 

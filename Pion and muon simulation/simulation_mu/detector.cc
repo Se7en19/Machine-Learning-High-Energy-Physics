@@ -72,6 +72,18 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
    
 	ekin = aStep->GetPreStepPoint()->GetKineticEnergy();
 	
+
+    	G4double momentumMag = aStep->GetPreStepPoint()->GetMomentum().mag();
+    
+    
+    	G4double carga = aStep->GetTrack()->GetDefinition()->GetPDGCharge();
+    
+   
+    	G4double momentum_carga = 0.;
+    	if (carga != 0.) {
+        	momentum_carga = momentumMag / carga;
+    	}
+
 	G4AnalysisManager *man = G4AnalysisManager::Instance();
 	
 	const G4Event* evt = G4RunManager::GetRunManager()->GetCurrentEvent();
@@ -89,6 +101,7 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
  	man->FillNtupleDColumn(7, tof);           
 	man->FillNtupleDColumn(8, trackLength);   
 	man->FillNtupleDColumn(9, scatteringAngle);
+	man->FillNtupleDColumn(10, momentum_carga);
 	man->AddNtupleRow(0);
 	
 	return true;
