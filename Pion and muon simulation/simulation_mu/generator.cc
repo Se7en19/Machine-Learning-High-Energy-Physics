@@ -1,4 +1,6 @@
 #include "generator.hh"
+#include "Randomize.hh"
+#include "G4SystemOfUnits.hh"
 
 MyPrimaryGenerator::MyPrimaryGenerator()
 {
@@ -25,4 +27,21 @@ MyPrimaryGenerator::~MyPrimaryGenerator()
 void MyPrimaryGenerator::GeneratePrimaries(G4Event *anEvent)
 {	
 	fParticleGun->GeneratePrimaryVertex(anEvent);
+	
+	G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
+    
+    	G4double pMin = 50. * MeV;
+    	G4double pMax = 1000. * MeV;
+    	
+    	G4double pRandomMinus = pMin + (pMax - pMin) * G4UniformRand();
+    	
+    	fParticleGun->SetParticleDefinition(particleTable->FindParticle("mu-"));
+    	fParticleGun->SetParticleMomentum(pRandomMinus);
+    	fParticleGun->GeneratePrimaryVertex(anEvent);
+    
+    	G4double pRandomPlus = pMin + (pMax - pMin) * G4UniformRand();
+    	
+    	fParticleGun->SetParticleDefinition(particleTable->FindParticle("mu+"));
+    	fParticleGun->SetParticleMomentum(pRandomPlus);
+    	fParticleGun->GeneratePrimaryVertex(anEvent);
 }
