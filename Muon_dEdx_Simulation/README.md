@@ -7,20 +7,20 @@ Este repositorio implementa una simulación de pérdida de energía por ionizaci
 - generar un espectro de momento de muones en un rango relativista;
 - registrar depósitos de energía paso a paso en volúmenes sensibles;
 - reconstruir `dE/dx` por cámara y por evento primario;
-- producir un `TTree` ROOT para análisis comparativo con curvas tipo Bethe-Bloch.
+- producir un `TTree` ROOT para comparar con curvas tipo Bethe-Bloch.
 
-El caso de uso principal es validación física de la dependencia de `dE/dx` respecto a `p/q`, `beta` y `beta*gamma`.
+El objetivo es validar la dependencia de `dE/dx` respecto a `p/q`, `beta` y `beta*gamma`.
 
 ## 2. Modelo físico implementado
 
 ### 2.1 Procesos de física
 
-La lista de física usada es:
+La lista de física es:
 
 - `FTFP_BERT`
-- `G4StepLimiterPhysics` (para respetar límite máximo de paso en la región tracker)
+- `G4StepLimiterPhysics` (para respetar el límite máximo de paso en la región tracker)
 
-La ionización de partículas cargadas en materia proviene de los procesos EM de Geant4 incluidos en `FTFP_BERT`.
+La ionización de partículas cargadas en materia viene de los procesos EM de Geant4 incluidos en `FTFP_BERT`.
 
 ### 2.2 Variable de interés: dE/dx
 
@@ -41,7 +41,7 @@ Con las unidades internas de Geant4 usadas en este código:
 
 ### 2.3 Rigidez
 
-Se guarda la rigidez como:
+La rigidez se guarda como:
 
 - `rigidity = |p| / q`
 
@@ -84,14 +84,14 @@ Por evento:
 
 ## 5. Detección sensible y reconstrucción por evento
 
-### 5.1 Definición de hit en esta simulación
+### 5.1 Definición de hit
 
-En [`src/TrackerSD.cc`](src/TrackerSD.cc), un `hit` se define de forma operacional como un paso de tracking dentro de un volumen sensible `Chamber_LV` que cumple simultáneamente:
+En [`src/TrackerSD.cc`](src/TrackerSD.cc), un hit se define de forma operacional como un paso de tracking dentro de un volumen sensible `Chamber_LV` que cumple simultáneamente:
 
 - `Edep > 0` (depósito de energía no nulo en el paso);
 - `stepLength > 0` (longitud geométrica de paso no nula).
 
-Si una de esas dos condiciones falla, el paso no genera hit y se descarta.
+Si alguna de esas dos condiciones falla, el paso se descarta sin generar hit.
 
 Cuando sí se genera hit, el objeto `TrackerHit` almacena:
 
@@ -103,7 +103,7 @@ Cuando sí se genera hit, el objeto `TrackerHit` almacena:
 - `momentum` en `PreStepPoint`;
 - `charge` de la partícula.
 
-Implicación importante: en este diseño, un hit no corresponde a "una partícula cruza una cámara", sino a "un paso válido del integrador de Geant4 dentro de una cámara sensible". Por ello, una misma traza puede producir múltiples hits por cámara.
+Un hit aquí no equivale a "una partícula cruza una cámara", sino a "un paso válido del integrador de Geant4 dentro de una cámara sensible". Por eso, una misma traza puede producir múltiples hits por cámara.
 
 ### 5.2 Reducción a observables por cámara
 
@@ -131,9 +131,9 @@ Columnas:
 3. `chamberNb` (`int`, `0..4`)
 4. `dedx` (`double`, MeV/mm)
 5. `rigidity` (`double`, MeV/c con signo de carga)
-6. `ekin` (`double`)  
+6. `ekin` (`double`)
    Nota: actualmente esta columna se rellena con el mismo valor que `rigidity` (no con energía cinética real).
-7. `particle` (`string`)  
+7. `particle` (`string`)
    Nota: en el estado actual no se asigna explícitamente en `TrackerSD`, por lo que puede quedar vacío.
 
 ## 7. Postprocesado y validación física
@@ -203,10 +203,10 @@ Vía `DetectorMessenger`:
 
 ## 10. Limitaciones técnicas actuales (importantes)
 
-1. `CMakeLists.txt` hereda una lista de scripts del ejemplo B2a original (`exampleB2a.out`, `exampleB2.in`, `gui.mac`, `run1.mac`, `run2.mac`, `init_vis.mac`, `vis.mac`) que no están presentes en este repositorio.  
+1. `CMakeLists.txt` hereda una lista de scripts del ejemplo B2a original (`exampleB2a.out`, `exampleB2.in`, `gui.mac`, `run1.mac`, `run2.mac`, `init_vis.mac`, `vis.mac`) que no están presentes en este repositorio.
    En el estado actual, `cmake -S . -B build` falla hasta ajustar esa sección.
 
-2. `run_dedx.mac` define energías de `/gun/energy`, pero el generador primario personalizado vuelve a fijar energía y partícula en cada evento.  
+2. `run_dedx.mac` define energías de `/gun/energy`, pero el generador primario personalizado vuelve a fijar energía y partícula en cada evento.
    Resultado: el barrido de energías del macro no controla la cinemática efectiva mientras `PrimaryGeneratorAction` conserve la lógica actual.
 
 3. La columna `ekin` del ntuple no contiene energía cinética real en la implementación actual.
@@ -215,7 +215,7 @@ Vía `DetectorMessenger`:
 
 ## 11. Interpretación física esperada
 
-Si la estadística es suficiente y se corrigen/entienden los puntos anteriores, se espera observar:
+Con estadística suficiente y teniendo en cuenta las limitaciones anteriores, se espera observar:
 
 - separación por signo en `dE/dx vs p/q` (`mu-` a la izquierda, `mu+` a la derecha);
 - tendencia `1/beta^2` a bajos `beta*gamma`;
