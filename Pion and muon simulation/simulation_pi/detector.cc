@@ -89,6 +89,7 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
  	man->FillNtupleDColumn(7, tof);           
 	man->FillNtupleDColumn(8, trackLength);   
 	man->FillNtupleDColumn(9, scatteringAngle);
+	man->FillNtupleDColumn(10, aStep->GetPreStepPoint()->GetMomentum().mag());
 	man->AddNtupleRow(0);
 	
 	return true;
