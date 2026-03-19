@@ -1,10 +1,12 @@
 # Carpetas de compilación
 simulation_pi/build/
+simulation_mu/build/
 bin/
 obj/
 
 # Archivos de salida de ROOT y datos
 *.root
+!Classifier/data/**/*.root
 *.out
 *.log
 
