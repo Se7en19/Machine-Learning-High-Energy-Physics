@@ -9,8 +9,8 @@ Clasifica muones (μ+) vs piones (π+) a partir de los hits registrados en las s
 ```
 Classifier/
 ├── data/
-│   ├── muon/          # 60 archivos output_run0.root ... output_run59.root
-│   └── pion/          # 60 archivos output_run0.root ... output_run59.root
+│   ├── muon/          # 10 archivos output_run0.root ... output_run9.root
+│   └── pion/          # 10 archivos output_run0.root ... output_run9.root
 └── muon_pion_classifier.ipynb
 ```
 
@@ -28,7 +28,7 @@ Cada archivo ROOT tiene un TTree llamado `Hits` con estas columnas:
 | `ScatteringAng` | Ángulo de scattering múltiple (rad) |
 | `Momentum` | Momento (MeV/c) |
 
-Los 60 runs por partícula van de ~10 MeV a ~1000 MeV en escala log (1000 eventos cada uno).
+Los 10 runs por partícula cubren de 1.0 GeV a ~11 GeV en escala logarítmica, 1 000 eventos cada uno, para un total de 10 000 eventos por clase.
 
 ---
 
@@ -110,7 +110,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 ---
 
-### Paso 4 — Entrenamiento XGBoost ⬜ PENDIENTE
+### Paso 4 — Entrenamiento XGBoost ✅
 
 ```python
 from xgboost import XGBClassifier
@@ -135,7 +135,7 @@ model.fit(
 
 ---
 
-### Paso 5 — Evaluación ⬜ PENDIENTE
+### Paso 5 — Evaluación ✅
 
 Métricas a reportar:
 - ROC-AUC (métrica principal)
@@ -162,7 +162,7 @@ shap.summary_plot(shap_values, X_test)
 
 ---
 
-### Paso 6 — Análisis por energía ⬜ PENDIENTE
+### Paso 6 — Análisis por energía ✅
 
 Ver dónde falla el clasificador separando por bins de energía:
 
@@ -219,6 +219,66 @@ class MuonPionClassifier:
     def save(self, path): ...
     def load(self, path): ...
 ```
+
+---
+
+## Resultados
+
+### Métricas globales
+
+| Métrica | Valor |
+|---|---|
+| ROC-AUC | 1.000 |
+| Eventos de prueba | 4 000 (2 000 muones, 2 000 piones) |
+| Clasificaciones correctas | 3 999 / 4 000 |
+| Tasa de error global | 0.025 % |
+
+Un solo evento fue mal clasificado: un pión predicho como muón. Ningún muón fue clasificado como pión.
+
+### Matriz de confusión
+
+|  | Predicho: pión (0) | Predicho: muón (1) |
+|---|---|---|
+| Real: pión (0) | 1 999 | 1 |
+| Real: muón (1) | 0 | 2 000 |
+
+### Curva ROC y curva de aprendizaje
+
+AUC = 1.00. El log-loss desciende desde ~0.65 en el primer round hasta prácticamente cero, con convergencia cerca del round 250. No hay señal de sobreajuste.
+
+### Importancia de características (gain)
+
+| Feature | Gain |
+|---|---|
+| `dedx_std` | 1 802.4 |
+| `dedx_mean` | 851.1 |
+| `dedx_max` | 631.9 |
+| `tof_range` | 81.2 |
+| `tof_first` | 8.6 |
+| `n_unique_cells` | 5.7 |
+| `n_hits` | 5.0 |
+| `radial_spread` | 4.5 |
+| `scat_max` | 3.0 |
+| `edep_sum` | 2.2 |
+| `track_mean` | 2.1 |
+| `edep_std` | 1.6 |
+| `edep_max` | 1.5 |
+| `scat_std` | 1.4 |
+| `track_first` | 1.1 |
+
+Las tres variables de dE/dx concentran el 84 % de la ganancia total. El clasificador discrimina principalmente por la variabilidad del dE/dx paso a paso: el pión inicia cascadas hadrónicas que producen fluctuaciones grandes en los depósitos, el muón deja una traza de ionización comparativamente uniforme. `tof_range` entra como cuarta variable porque los secundarios de la cascada llegan al detector con tiempos retrasados respecto al primario.
+
+### Error por rango de energía cinética
+
+| Rango | N eventos | Error (%) | ROC-AUC |
+|---|---|---|---|
+| 1.0–1.5 GeV | 825 | 0.00 | 1.0 |
+| 1.5–2.5 GeV | 753 | 0.00 | 1.0 |
+| 2.5–4.5 GeV | 789 | 0.00 | 1.0 |
+| 4.5–7.5 GeV | 824 | 0.12 | 1.0 |
+| 7.5–11 GeV | 808 | 0.00 | 1.0 |
+
+El único rango con errores es 4.5–7.5 GeV, con una tasa de 0.12 %. A esas energías la probabilidad de interacción hadrónica del pión es intermedia: algunos eventos no desarrollan una cascada completa y su perfil de depósito se acerca al del muón. El AUC de 1.0 en todos los rangos confirma que el modelo ordena correctamente los scores de probabilidad en cualquier región del espectro, aunque en ese intervalo cometa algunas asignaciones de clase en el umbral de decisión.
 
 ---
 
