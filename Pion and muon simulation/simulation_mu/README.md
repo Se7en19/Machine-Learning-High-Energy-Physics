@@ -8,7 +8,7 @@ Simulación de muones positivos en un detector de hierro segmentado. Produce los
 
 El cañón dispara muones (μ⁺) con energía cinética variable en la dirección +z. Cada partícula atraviesa una cuadrícula de 100 celdas de hierro (10 × 10), y cada paso dentro de una celda sensible genera una fila en el árbol ROOT.
 
-El barrido cubre 11 puntos entre 1.0 y 2.6 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 11 000 eventos en total.
+El barrido cubre 10 puntos entre 1.0 y ~11 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 10 000 eventos en total.
 
 ---
 
@@ -79,13 +79,13 @@ El archivo `barrido_continuo.mac` contiene 11 runs:
 | Parámetro | Valor |
 |---|---|
 | Energía mínima | 1.0000 GeV |
-| Energía máxima | 2.6102 GeV |
-| Número de runs | 11 |
+| Energía máxima | ~11 GeV |
+| Número de runs | 10 |
 | Espaciado | logarítmico uniforme |
 | Eventos por run | 1 000 |
-| Total de eventos | 11 000 |
+| Total de eventos | 10 000 |
 
-Los archivos de salida son `output_run0.root` a `output_run10.root`.
+Los archivos de salida son `output_run0.root` a `output_run9.root`.
 
 ---
 
@@ -133,6 +133,6 @@ make -j4
 
 ## Física del muón en hierro
 
-A energías de GeV el muón está en la región relativista de Bethe-Bloch. Pierde energía principalmente por ionización, con una tasa cercana al mínimo (MIP). En 7 m de hierro, los muones del barrido (1–2.6 GeV) pueden detenerse dentro del detector, dejando una traza completa con cientos de pasos a lo largo del eje z.
+A energías de GeV el muón está en la región relativista de Bethe-Bloch. Pierde energía principalmente por ionización, con una tasa cercana al mínimo (MIP). En 7 m de hierro, los muones de menor energía del barrido (cercanos a 1 GeV) pueden detenerse dentro del detector, dejando una traza completa. A partir de unos pocos GeV el muón atraviesa el volumen sin frenarse del todo.
 
 El muón no inicia cascadas hadrónicas. Eso es lo que lo distingue del pión en este experimento: su traza es limpia, estrecha en el plano transversal, y con depósitos de energía relativamente uniformes a lo largo del recorrido.
