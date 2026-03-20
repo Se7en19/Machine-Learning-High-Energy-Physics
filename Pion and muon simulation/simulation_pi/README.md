@@ -1,14 +1,14 @@
 # Simulación Geant4 — Pión (π⁺)
 
-Simulación de piones positivos atravesando un detector de hierro segmentado. Genera los datasets ROOT que alimentan el clasificador μ⁺/π⁺.
+Simulación de piones positivos en un detector de hierro segmentado. Produce los datasets ROOT que usa el clasificador μ⁺/π⁺.
 
 ---
 
 ## Descripción general
 
-Un cañón de partículas dispara piones (π⁺) con energía cinética variable a lo largo del eje z. Las partículas atraviesan un arreglo de 10 000 celdas de hierro (100 × 100) y cada interacción dentro de una celda sensible queda registrada como un *hit* en un árbol ROOT.
+El cañón dispara piones (π⁺) con energía cinética variable en la dirección +z. Cada partícula atraviesa una cuadrícula de 100 celdas de hierro (10 × 10). A diferencia del muón, el pión puede iniciar cascadas hadrónicas al interactuar con los núcleos de hierro, generando decenas o cientos de secundarios por evento, cada uno con sus propios pasos registrados como hits.
 
-El barrido en energía cubre de 1.0 GeV a 10.0 GeV en 60 puntos distribuidos en escala logarítmica, con 1 000 eventos por punto. Cada run produce un archivo ROOT independiente.
+El barrido cubre 11 puntos entre 1.0 y 2.6 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 11 000 eventos en total.
 
 ---
 
@@ -16,109 +16,106 @@ El barrido en energía cubre de 1.0 GeV a 10.0 GeV en 60 puntos distribuidos en 
 
 | Parámetro | Valor |
 |---|---|
-| Volumen world | caja de aire (G4_AIR), 1 m × 1 m × 10 m |
-| Material world | G4_AIR |
-| Origen del cañón | (0, 0, 0) mm |
+| Material | G4_AIR |
+| Semi-longitudes (x, y, z) | 0.6 m, 0.6 m, 8.0 m |
+| Extensión en z | −8.0 m a +8.0 m |
+| Posición del cañón | (0, 0, 0) |
 | Dirección del haz | +z |
 
-El mundo tiene semi-longitudes (0.5, 0.5, 5.0) m en (x, y, z).
+El mundo mide 8 m en semi-longitud z para contener sin recortes el detector, que llega hasta z = 7.05 m.
 
 ---
 
 ## Geometría del detector
 
-El detector es un arreglo de 100 × 100 celdas de hierro dispuesto perpendicularmente al haz.
-
 | Parámetro | Valor |
 |---|---|
-| Material | G4_Fe (hierro, ρ = 7.874 g/cm³) |
-| Dimensiones de cada celda | 1 cm × 1 cm × 7 m |
-| Número de celdas | 10 000 (100 × 100 en x-y) |
-| Centro del arreglo en z | 3.55 m |
-| Rango en z | 0.05 m → 7.05 m |
-| Cobertura transversal | −0.5 m → +0.5 m en x e y |
+| Material | G4_Fe (ρ = 7.874 g/cm³) |
+| Celdas | 100 en total, cuadrícula 10 × 10 en x-y |
+| Dimensiones de cada celda | 10 cm × 10 cm × 7 m |
+| Centro en z | 3.55 m |
+| Rango en z | 0.05 m a 7.05 m |
+| Cobertura transversal | −0.5 m a +0.5 m en x e y |
 
-Cada celda ocupa una posición única en la cuadrícula. Su centro en el plano transversal es:
+Centro de cada celda en el plano transversal:
 
 ```
-x_i = -0.5 m + (i + 0.5) × 0.01 m   (i = 0 … 99)
-y_j = -0.5 m + (j + 0.5) × 0.01 m   (j = 0 … 99)
+x_i = -0.5 m + (i + 0.5) × 0.1 m   (i = 0 … 9)
+y_j = -0.5 m + (j + 0.5) × 0.1 m   (j = 0 … 9)
 ```
 
-El índice de copia de cada celda es `j + i×100`.
+Índice de copia: `j + i×10`.
 
 ---
 
 ## Lista de física
 
 ```
-G4EmStandardPhysics      — procesos electromagnéticos estándar
+G4EmStandardPhysics      — ionización, bremsstrahlung, procesos EM estándar
 G4OpticalPhysics         — fotones ópticos
-G4HadronPhysicsFTFP_BERT — hadrones: FTFP por encima de 3–6 GeV, BERT por debajo
+G4HadronPhysicsFTFP_BERT — hadrones (BERT < 3-6 GeV, FTFP por encima)
 ```
 
-FTFP_BERT es la lista recomendada para física hadrónica de altas energías. Para el π⁺ esto es especialmente relevante: el pión puede iniciar cascadas hadrónicas a través de interacciones nucleares inelásticas (absorción, producción de secundarios), lo que genera depósitos de energía muy distintos a los del muón. El umbral de transición BERT→FTFP está entre 3 y 6 GeV para piones.
+FTFP_BERT es la lista estándar para física hadrónica de altas energías en Geant4. Para el π⁺ es especialmente relevante porque el pión puede interactuar inelásticamente con los núcleos de hierro, produciendo secundarios (π⁰, protones de retroceso, neutrones) que a su vez dejan hits en el detector. El umbral de transición BERT → FTFP está entre 3 y 6 GeV para piones, aunque en este barrido las energías no superan los 2.6 GeV, por lo que el modelo BERT maneja todas las interacciones hadrónicas.
 
 ---
 
-## Fuente primaria (cañón)
+## Fuente primaria
 
 | Parámetro | Valor |
 |---|---|
-| Partícula | π⁺ (pión positivo, masa = 139.57 MeV/c²) |
+| Partícula | π⁺ (masa = 139.57 MeV/c²) |
 | Posición | (0, 0, 0) |
-| Dirección | (0, 0, 1) — paralela al eje z |
-| Energía | variable (ver barrido) |
-| Número de partículas por evento | 1 |
-
-El valor por defecto en el código es 100 GeV de momento; en el barrido de producción la energía la sobreescribe `barrido_continuo.mac`.
+| Dirección | (0, 0, 1) |
+| Energía | variable, definida por barrido_continuo.mac |
+| Partículas por evento | 1 |
 
 ---
 
 ## Barrido en energía
 
-El archivo `barrido_continuo.mac` define 60 runs en escala logarítmica:
+El archivo `barrido_continuo.mac` contiene 11 runs:
 
 | Parámetro | Valor |
 |---|---|
 | Energía mínima | 1.0000 GeV |
-| Energía máxima | 10.000 GeV |
-| Número de puntos | 60 |
+| Energía máxima | 2.6102 GeV |
+| Número de runs | 11 |
 | Espaciado | logarítmico uniforme |
 | Eventos por run | 1 000 |
-| Total de eventos generados | 60 000 |
+| Total de eventos | 11 000 |
 
-Cada run produce un archivo `output_runN.root` (N = 0 … 59).
+Los archivos de salida son `output_run0.root` a `output_run10.root`.
 
 ---
 
 ## Definición de un hit
 
-Un hit se registra cuando un paso (*step*) de una partícula ocurre dentro de una celda sensible. El detector implementa `G4VSensitiveDetector::ProcessHits`, que se invoca automáticamente por Geant4 para cada paso cuyo volumen de pre-step es el volumen sensible.
+Un hit se registra cada vez que un paso de una partícula ocurre dentro de una celda sensible. El detector implementa `G4VSensitiveDetector::ProcessHits`, que Geant4 llama automáticamente para cada paso cuyo volumen de pre-step sea el volumen sensible.
 
-No existe umbral de energía mínima: cualquier paso dentro de una celda, independientemente de `fEdep`, genera una fila en el árbol. En la práctica, los piones producen cascadas hadrónicas que generan muchos secundarios (π⁰, protones de retroceso, neutrones), cada uno de los cuales contribuye con sus propios hits si penetra una celda sensible.
+No hay umbral de energía mínima. En eventos de pión con cascada hadrónica, una sola celda puede acumular cientos de hits de secundarios: `n_unique_cells` es bajo pero `n_hits` puede ser muy alto.
 
-Por cada hit se registran las siguientes cantidades:
+Columnas del árbol `Hits`:
 
 | Columna ROOT | Descripción | Fuente en Geant4 |
 |---|---|---|
 | `fEvent` | ID del evento dentro del run | `G4Event::GetEventID()` |
-| `fX`, `fY`, `fZ` | Posición del centro de la celda detectora (mm) | `G4VPhysicalVolume::GetTranslation()` |
-| `fEdep` | Energía total depositada en el paso (MeV) | `G4Step::GetTotalEnergyDeposit()` |
-| `fdEdx` | Energía depositada dividida por la longitud del paso (MeV/mm) | `fEdep / G4Step::GetStepLength()` |
-| `Ekin` | Energía cinética de la partícula al inicio del paso (MeV) | `G4StepPoint::GetKineticEnergy()` (pre-step) |
-| `TOF` | Tiempo global al inicio del paso (ns) | `G4StepPoint::GetGlobalTime()` (pre-step) |
-| `TrackLength` | Longitud total recorrida por la traza hasta ese paso (mm) | `G4Track::GetTrackLength()` |
-| `ScatteringAng` | Ángulo entre la dirección pre-step y post-step (rad) | `dirPre.angle(dirPost)` |
+| `fX`, `fY`, `fZ` | Centro geométrico de la celda (mm) | `G4VPhysicalVolume::GetTranslation()` |
+| `fEdep` | Energía depositada en el paso (MeV) | `G4Step::GetTotalEnergyDeposit()` |
+| `fdEdx` | Energía por unidad de longitud (MeV/mm) | `fEdep / G4Step::GetStepLength()` |
+| `Ekin` | Energía cinética al inicio del paso (MeV) | `G4StepPoint::GetKineticEnergy()` |
+| `TOF` | Tiempo global al inicio del paso (ns) | `G4StepPoint::GetGlobalTime()` |
+| `TrackLength` | Longitud total de traza hasta ese paso (mm) | `G4Track::GetTrackLength()` |
+| `ScatteringAng` | Ángulo entre dirección pre-step y post-step (rad) | `dirPre.angle(dirPost)` |
 | `Momentum` | Módulo del momento al inicio del paso (MeV/c) | `G4StepPoint::GetMomentum().mag()` |
 
-> **Nota sobre fX, fY, fZ**: estas columnas no corresponden a la posición exacta del paso sino al centro geométrico de la celda que lo contiene. Todas las filas de una misma celda tienen los mismos valores de fX, fY, fZ. En el caso del pión, una sola celda puede concentrar cientos de hits de secundarios, lo que resulta en `n_unique_cells` bajo pero `n_hits` muy alto.
+`fX`, `fY`, `fZ` son el centro geométrico de la celda, no la posición exacta del paso. Todas las filas de una misma celda tienen los mismos valores de estas tres columnas.
 
 ---
 
 ## Salida
 
-Cada run genera un archivo `output_runN.root` en el directorio de ejecución con un único `TTree` llamado `Hits`. El archivo se abre, escribe y cierra en `BeginOfRunAction` / `EndOfRunAction` usando `G4AnalysisManager`.
+Cada run genera un archivo `output_runN.root` con un `TTree` llamado `Hits`. El archivo se abre en `BeginOfRunAction` y se cierra en `EndOfRunAction` usando `G4AnalysisManager`.
 
 ---
 
@@ -129,18 +126,19 @@ cd build
 cmake ..
 make -j4
 
-# Barrido completo en energía (60 runs × 1000 eventos)
 ./sim ../barrido_continuo.mac
 ```
 
 ---
 
-## Notas de física relevantes
+## Física del pión en hierro
 
-El pión cargado es un hadrón (quark u y antiquark d̄). A energías de GeV interactúa con los núcleos de hierro mediante la fuerza fuerte, produciendo cascadas hadrónicas con características muy distintas a las del muón:
+El π⁺ es un hadrón (quark u, antiquark d̄). Cuando entra en el hierro, puede interactuar mediante la fuerza fuerte con los núcleos de Fe, iniciando una cascada hadrónica. Esto produce tres efectos observables que lo distinguen del muón:
 
-- **Mayor deposición de energía**: la interacción hadrónica convierte gran parte de la energía cinética en secundarios que se detienen dentro del detector.
-- **Dispersión lateral mayor**: los secundarios de la cascada se alejan del eje del haz, aumentando `radial_spread` y `ScatteringAng`.
-- **Fluctuaciones en fEdep**: las interacciones hadrónicas tienen varianza intrínsecamente mayor que la ionización electromagnética, generando distribuciones de Landau más anchas.
+La cascada convierte buena parte de la energía cinética en secundarios que se frenan dentro del detector. El depósito de energía total por evento (`edep_sum`) es mucho mayor que en el muón a igual energía de entrada.
 
-En la región MIP (βγ ≈ 3–4, aproximadamente 400–600 MeV para el π⁺), el dE/dx del pión por ionización es prácticamente idéntico al del muón. A energías de GeV, el pión ya está bien por encima del MIP y la diferencia con el muón se vuelve más pronunciada a través de las cascadas hadrónicas, que el μ⁺ no puede iniciar.
+Los secundarios se dispersan lateralmente fuera del eje del haz. El `radial_spread` y el `ScatteringAng` promedio son mayores que los del muón, que viaja en línea casi recta.
+
+Las interacciones hadrónicas tienen fluctuaciones intrínsecamente grandes. La distribución de `fEdep` paso a paso es más ancha que la de ionización pura, con colas más pesadas.
+
+En la región MIP (βγ ≈ 3–4, unos 400–600 MeV para el π⁺), el dE/dx del pión por ionización es prácticamente igual al del muón. A 1–2.6 GeV el pión está por encima del MIP y las cascadas hadrónicas son el mecanismo dominante de separación entre las dos partículas.
