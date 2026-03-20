@@ -46,7 +46,7 @@ conda activate ML_HE_Physics
 
 ## Plan del notebook (`muon_pion_classifier.ipynb`)
 
-### Paso 1 — Carga de datos ✅
+### Paso 1 — Carga de datos hecho
 
 Cargar todos los archivos ROOT y concatenar en un DataFrame de hits:
 
@@ -75,7 +75,7 @@ hits_pi = load_hits('data/pion/output_run*.root')
 
 ---
 
-### Paso 2 — Feature engineering ✅
+### Paso 2 — Feature engineering hecho
 
 Agregar hits → 1 fila por evento usando `groupby('event_uid')`:
 
@@ -94,7 +94,7 @@ Resultado: DataFrame `df` con ~22 features + columna `label` (1=muón, 0=pión).
 
 ---
 
-### Paso 3 — Train/test split ✅
+### Paso 3 — Train/test split hecho
 
 ```python
 from sklearn.model_selection import train_test_split
@@ -110,7 +110,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 ---
 
-### Paso 4 — Entrenamiento XGBoost ✅
+### Paso 4 — Entrenamiento XGBoost hecho
 
 ```python
 from xgboost import XGBClassifier
@@ -135,7 +135,7 @@ model.fit(
 
 ---
 
-### Paso 5 — Evaluación ✅
+### Paso 5 — Evaluación hecho
 
 Métricas a reportar:
 - ROC-AUC (métrica principal)
@@ -162,7 +162,7 @@ shap.summary_plot(shap_values, X_test)
 
 ---
 
-### Paso 6 — Análisis por energía ✅
+### Paso 6 — Análisis por energía hecho
 
 Ver dónde falla el clasificador separando por bins de energía:
 
@@ -177,7 +177,7 @@ df['ekin_mean_event'] = ...  # ekin promedio de los hits del evento
 
 ---
 
-### Paso 7 — Optimización de hiperparámetros ⬜ PENDIENTE
+### Paso 7 — Optimización de hiperparámetros PENDIENTE
 
 Usar Optuna para buscar los mejores hiperparámetros:
 
@@ -204,7 +204,7 @@ print('Best params:', study.best_params)
 
 ---
 
-### Paso 8 — Clase `MuonPionClassifier` ⬜ PENDIENTE (entregable semana 13)
+### Paso 8 — Clase `MuonPionClassifier` PENDIENTE (entregable semana 13)
 
 Todo el pipeline en una clase:
 
