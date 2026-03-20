@@ -11,7 +11,8 @@ Classifier/
 ├── data/
 │   ├── muon/          # 10 archivos output_run0.root ... output_run9.root
 │   └── pion/          # 10 archivos output_run0.root ... output_run9.root
-└── muon_pion_classifier.ipynb
+├── muon_pion_classifier.ipynb
+└── muon_pion_classifier_2.ipynb
 ```
 
 Cada archivo ROOT tiene un TTree llamado `Hits` con estas columnas:
@@ -28,7 +29,7 @@ Cada archivo ROOT tiene un TTree llamado `Hits` con estas columnas:
 | `ScatteringAng` | Ángulo de scattering múltiple (rad) |
 | `Momentum` | Momento (MeV/c) |
 
-Los 10 runs por partícula cubren de 1.0 GeV a ~11 GeV en escala logarítmica, 1 000 eventos cada uno, para un total de 10 000 eventos por clase.
+Los 10 runs por partícula cubren de 1.0 GeV a 10.0 GeV en escala logarítmica, 1 000 eventos cada uno, para un total de 10 000 eventos por clase.
 
 ---
 
@@ -276,7 +277,7 @@ Las tres variables de dE/dx concentran el 84 % de la ganancia total. El clasific
 | 1.5–2.5 GeV | 753 | 0.00 | 1.0 |
 | 2.5–4.5 GeV | 789 | 0.00 | 1.0 |
 | 4.5–7.5 GeV | 824 | 0.12 | 1.0 |
-| 7.5–11 GeV | 808 | 0.00 | 1.0 |
+| 7.5–10 GeV | 808 | 0.00 | 1.0 |
 
 El único rango con errores es 4.5–7.5 GeV, con una tasa de 0.12 %. A esas energías la probabilidad de interacción hadrónica del pión es intermedia: algunos eventos no desarrollan una cascada completa y su perfil de depósito se acerca al del muón. El AUC de 1.0 en todos los rangos confirma que el modelo ordena correctamente los scores de probabilidad en cualquier región del espectro, aunque en ese intervalo cometa algunas asignaciones de clase en el umbral de decisión.
 

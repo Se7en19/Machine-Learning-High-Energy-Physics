@@ -8,7 +8,7 @@ Simulación de muones positivos en un detector de hierro segmentado. Produce los
 
 El cañón dispara muones (μ⁺) con energía cinética variable en la dirección +z. Cada partícula atraviesa una cuadrícula de 100 celdas de hierro (10 × 10), y cada paso dentro de una celda sensible genera una fila en el árbol ROOT.
 
-El barrido cubre 10 puntos entre 1.0 y ~11 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 10 000 eventos en total.
+El barrido cubre 10 puntos entre 1.0 y 10.0 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 10 000 eventos en total.
 
 ---
 
@@ -74,12 +74,12 @@ Para el μ⁺, los procesos que importan son ionización y bremsstrahlung. Las i
 
 ## Barrido en energía
 
-El archivo `barrido_continuo.mac` contiene 11 runs:
+El archivo `barrido_continuo.mac` contiene 10 runs:
 
 | Parámetro | Valor |
 |---|---|
 | Energía mínima | 1.0000 GeV |
-| Energía máxima | ~11 GeV |
+| Energía máxima | 10.000 GeV |
 | Número de runs | 10 |
 | Espaciado | logarítmico uniforme |
 | Eventos por run | 1 000 |

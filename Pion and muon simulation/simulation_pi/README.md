@@ -8,7 +8,7 @@ Simulación de piones positivos en un detector de hierro segmentado. Produce los
 
 El cañón dispara piones (π⁺) con energía cinética variable en la dirección +z. Cada partícula atraviesa una cuadrícula de 100 celdas de hierro (10 × 10). A diferencia del muón, el pión puede iniciar cascadas hadrónicas al interactuar con los núcleos de hierro, generando decenas o cientos de secundarios por evento, cada uno con sus propios pasos registrados como hits.
 
-El barrido cubre 10 puntos entre 1.0 y ~11 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 10 000 eventos en total.
+El barrido cubre 10 puntos entre 1.0 y 10.0 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 10 000 eventos en total.
 
 ---
 
@@ -74,12 +74,12 @@ FTFP_BERT es la lista estándar para física hadrónica de altas energías en Ge
 
 ## Barrido en energía
 
-El archivo `barrido_continuo.mac` contiene 11 runs:
+El archivo `barrido_continuo.mac` contiene 10 runs:
 
 | Parámetro | Valor |
 |---|---|
 | Energía mínima | 1.0000 GeV |
-| Energía máxima | ~11 GeV |
+| Energía máxima | 10.000 GeV |
 | Número de runs | 10 |
 | Espaciado | logarítmico uniforme |
 | Eventos por run | 1 000 |
