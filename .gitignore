@@ -6,7 +6,7 @@ obj/
 
 # Archivos de salida de ROOT y datos
 *.root
-!Classifier/data/**/*.root
+Classifier/data/**/*.root
 *.out
 *.log
 
