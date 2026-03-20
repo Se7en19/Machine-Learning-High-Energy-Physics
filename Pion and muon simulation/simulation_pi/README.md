@@ -8,7 +8,7 @@ Simulación de piones positivos en un detector de hierro segmentado. Produce los
 
 El cañón dispara piones (π⁺) con energía cinética variable en la dirección +z. Cada partícula atraviesa una cuadrícula de 100 celdas de hierro (10 × 10). A diferencia del muón, el pión puede iniciar cascadas hadrónicas al interactuar con los núcleos de hierro, generando decenas o cientos de secundarios por evento, cada uno con sus propios pasos registrados como hits.
 
-El barrido cubre 11 puntos entre 1.0 y 2.6 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 11 000 eventos en total.
+El barrido cubre 10 puntos entre 1.0 y ~11 GeV en escala logarítmica, 1 000 eventos por punto, lo que da 10 000 eventos en total.
 
 ---
 
@@ -79,13 +79,13 @@ El archivo `barrido_continuo.mac` contiene 11 runs:
 | Parámetro | Valor |
 |---|---|
 | Energía mínima | 1.0000 GeV |
-| Energía máxima | 2.6102 GeV |
-| Número de runs | 11 |
+| Energía máxima | ~11 GeV |
+| Número de runs | 10 |
 | Espaciado | logarítmico uniforme |
 | Eventos por run | 1 000 |
-| Total de eventos | 11 000 |
+| Total de eventos | 10 000 |
 
-Los archivos de salida son `output_run0.root` a `output_run10.root`.
+Los archivos de salida son `output_run0.root` a `output_run9.root`.
 
 ---
 
@@ -141,4 +141,4 @@ Los secundarios se dispersan lateralmente fuera del eje del haz. El `radial_spre
 
 Las interacciones hadrónicas tienen fluctuaciones intrínsecamente grandes. La distribución de `fEdep` paso a paso es más ancha que la de ionización pura, con colas más pesadas.
 
-En la región MIP (βγ ≈ 3–4, unos 400–600 MeV para el π⁺), el dE/dx del pión por ionización es prácticamente igual al del muón. A 1–2.6 GeV el pión está por encima del MIP y las cascadas hadrónicas son el mecanismo dominante de separación entre las dos partículas.
+En la región MIP (βγ ≈ 3–4, unos 400–600 MeV para el π⁺), el dE/dx del pión por ionización es prácticamente igual al del muón. En el rango de este barrido (1–11 GeV) el pión está por encima del MIP y las cascadas hadrónicas son el mecanismo dominante de separación entre las dos partículas. En el intervalo 4.5–7.5 GeV, sin embargo, la probabilidad de interacción inelástica es intermedia y algunos eventos no desarrollan cascada, lo que los hace más difíciles de separar.
