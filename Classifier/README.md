@@ -204,7 +204,7 @@ print('Best params:', study.best_params)
 
 ---
 
-### Paso 8 — Clase `MuonPionClassifier` PENDIENTE (entregable semana 13)
+### Paso 8 — Clase `MuonPionClassifier` PENDIENTE
 
 Todo el pipeline en una clase:
 
@@ -291,6 +291,4 @@ El único rango con errores es 4.5–7.5 GeV, con una tasa de 0.12 %. A esas ene
 ---
 
 ## Referencias
-
-- Proyecto: https://www.fcfm.buap.mx/mrodriguez/ProyectoPPML.html (Fase 3, semanas 10-13)
 - Simulaciones Geant4: `../Pion and muon simulation/`
