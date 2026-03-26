@@ -8,12 +8,12 @@ MyPrimaryGenerator::MyPrimaryGenerator()
 	G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
 	G4ParticleDefinition *particle = particleTable->FindParticle("mu+");
 
-	G4ThreeVector pos(0., 0., 0.);
+	G4ThreeVector pos(0., 0., -2.*m);
 	G4ThreeVector mom(0., 0., 1.);
 
 	fParticleGun->SetParticlePosition(pos);
 	fParticleGun->SetParticleMomentumDirection(mom);
-	fParticleGun->SetParticleEnergy(100.*MeV);   // default; overridden by barrido.mac
+	fParticleGun->SetParticleEnergy(100.*GeV);   // default; sobreescrito por barrido_continuo.mac
 	fParticleGun->SetParticleDefinition(particle);
 }
 

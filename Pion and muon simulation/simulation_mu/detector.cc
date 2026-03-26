@@ -10,6 +10,11 @@ MySensitiveDetector::~MySensitiveDetector()
 
 G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhist)
 {
+	// Solo registrar la traza primaria (TrackID=1)
+	// Esto define el hit: la partícula primaria entra al centellador y deposita energía
+	G4int trackID = aStep->GetTrack()->GetTrackID();
+	if (trackID != 1) return false;
+
 	G4double ekin = aStep->GetPreStepPoint()->GetKineticEnergy();
 
 	G4double edep = aStep->GetTotalEnergyDeposit();
@@ -37,24 +42,22 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
 	G4VPhysicalVolume  *physVol   = touchable->GetVolume();
 	G4ThreeVector posDetector     = physVol->GetTranslation();
 
-	//G4cout << "Detector position: " << posDetector << G4endl;
-
 	G4AnalysisManager *man = G4AnalysisManager::Instance();
 
 	const G4Event *evt = G4RunManager::GetRunManager()->GetCurrentEvent();
 	G4int eventID = evt->GetEventID();
 
-	man->FillNtupleIColumn(0, eventID);
-	man->FillNtupleDColumn(1, posDetector[0]);
-	man->FillNtupleDColumn(2, posDetector[1]);
-	man->FillNtupleDColumn(3, posDetector[2]);
-	man->FillNtupleDColumn(4, edep);
-	man->FillNtupleDColumn(5, dEdx);
-	man->FillNtupleDColumn(6, ekin);
-	man->FillNtupleDColumn(7, tof);
-	man->FillNtupleDColumn(8, trackLength);
-	man->FillNtupleDColumn(9, scatteringAngle);
-	man->FillNtupleDColumn(10, aStep->GetPreStepPoint()->GetMomentum().mag());
+	man->FillNtupleDColumn(0, posDetector[0]);
+	man->FillNtupleDColumn(1, posDetector[1]);
+	man->FillNtupleDColumn(2, posDetector[2]);
+	man->FillNtupleDColumn(3, edep);
+	man->FillNtupleDColumn(4, dEdx);
+	man->FillNtupleDColumn(5, ekin);
+	man->FillNtupleDColumn(6, tof);
+	man->FillNtupleDColumn(7, trackLength);
+	man->FillNtupleDColumn(8, scatteringAngle);
+	man->FillNtupleDColumn(9, aStep->GetPreStepPoint()->GetMomentum().mag());
+	man->FillNtupleIColumn(10, eventID);
 	man->AddNtupleRow(0);
 
 	return true;

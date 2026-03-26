@@ -12,14 +12,14 @@ void MyRunAction::BeginOfRunAction(const G4Run* aRun)
 {
 	G4AnalysisManager *man = G4AnalysisManager::Instance();
 
-	// One file per run, tree always named "Hits"
+	// Un archivo por run, árbol siempre llamado "Hits"
 	std::ostringstream oss;
-	oss << "output_run" << aRun->GetRunID() << ".root";
+	oss << "../../../Classifier/data/muon/output_run" << aRun->GetRunID() << ".root";
 	G4String fname = oss.str();
+	G4cout << "!!! CREANDO ARCHIVO EN: " << fname << G4endl;
 	man->OpenFile(fname);
 
 	man->CreateNtuple("Hits", "Hits");
-	man->CreateNtupleIColumn("fEvent");
 	man->CreateNtupleDColumn("fX");
 	man->CreateNtupleDColumn("fY");
 	man->CreateNtupleDColumn("fZ");
@@ -30,6 +30,7 @@ void MyRunAction::BeginOfRunAction(const G4Run* aRun)
 	man->CreateNtupleDColumn("TrackLength");
 	man->CreateNtupleDColumn("ScatteringAng");
 	man->CreateNtupleDColumn("Momentum");
+	man->CreateNtupleIColumn("fEvent");
 	man->FinishNtuple(0);
 }
 
