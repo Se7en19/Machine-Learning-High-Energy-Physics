@@ -1,13 +1,15 @@
 """
-Bethe-Bloch curve plotter — mu+ vs pi+  (Geant4, iron detector — G4_Fe 7m)
+Bethe-Bloch curve plotter — mu+ vs pi+  (Geant4, BC404 plastic scintillator)
 
 Inspired by Muon_dEdx_Simulation/analysis/plot_dedx.C
 
-Generates 4 publication-quality plots:
-  1. dE/dx vs βγ          (canonical Bethe-Bloch, log-log, mu+ vs pi+ overlay)
+Generates 6 publication-quality plots:
+  1. dE/dx vs βγ          (canonical Bethe-Bloch, log-log, mu+ vs pi+ side-by-side)
   2. dE/dx vs β           (velocity dependence)
-  3. dE/dx vs p           (momentum, log x)
-  4. Landau distribution  (dE/dx per step, density comparison)
+  3. dE/dx vs p           (momentum GeV/c, PID style, linear Y)
+  4. Landau distribution  (dE/dx per step)
+  5. Overlay βγ           (median dE/dx, mu+ vs pi+ in same panel)
+  6. PID combined         (2D histogram mu+ vs pi+ in momentum, single panel)
 
 Usage:
     python plot_bethe_bloch.py \
@@ -59,13 +61,13 @@ DEDX_MAX = 5.0    # MeV/mm  (captura la cola de Landau en plástico)
 
 
 # ============================================================================
-# Sternheimer density-effect correction δ(βγ) for Fe (PDG parameters)
+# Sternheimer density-effect correction δ(βγ) for polyvinyltoluene / BC404
 # ============================================================================
-# Parámetros para G4_Fe de la tabla de Sternheimer (PDG / NIST ESTAR):
-_STERN_Fe = dict(C=-3.7936, x0=0.1496, x1=2.4815, a=0.15018, m=3.4083, d0=0.00)
+# Parámetros de Sternheimer para G4_PLASTIC_SC_VINYLTOLUENE (PDG / NIST ESTAR):
+_STERN_BC404 = dict(C=-3.7936, x0=0.1496, x1=2.4815, a=0.15018, m=3.4083, d0=0.00)
 
-def density_effect(bg, stern=_STERN_Fe):
-    """Corrección por efecto de densidad δ(βγ) de Sternheimer para Fe."""
+def density_effect(bg, stern=_STERN_BC404):
+    """Corrección por efecto de densidad δ(βγ) de Sternheimer para BC404."""
     bg  = np.asarray(bg, dtype=float)
     x   = np.log10(bg)                         # x = log10(βγ)
     C, x0, x1, a, m, d0 = (stern[k] for k in ("C","x0","x1","a","m","d0"))
