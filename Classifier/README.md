@@ -1,35 +1,36 @@
-# Clasificador muón vs pión — XGBoost
+# Clasificador μ⁺ vs π⁺ — XGBoost
 
-Clasifica muones (μ+) vs piones (π+) a partir de los hits registrados en las simulaciones Geant4.
+Clasifica muones y piones a partir de lo que registra el centellador BC404. El problema es que en el plateau relativista (p > 1 GeV/c) las dos partículas depositan energía de forma muy similar, así que el clasificador tiene que apoyarse en varias variables a la vez.
 
 ---
 
-## Estructura del proyecto
+## Estructura
 
 ```
 Classifier/
 ├── data/
-│   ├── muon/          # 10 archivos output_run0.root ... output_run9.root
-│   └── pion/          # 10 archivos output_run0.root ... output_run9.root
-├── muon_pion_classifier.ipynb
-└── muon_pion_classifier_2.ipynb
+│   ├── muon/    # output_run18.root ... output_run79.root  (62 archivos)
+│   └── pion/    # output_run19.root ... output_run79.root  (61 archivos)
+└── muon_pion_classifier.ipynb
 ```
 
-Cada archivo ROOT tiene un TTree llamado `Hits` con estas columnas:
+Los archivos ROOT empiezan en run 18 (muones) y run 19 (piones) porque por debajo de ~170-183 MeV/c las partículas no atraviesan el absorbedor de 5 cm de hierro.
 
-| Columna | Descripción |
-|---|---|
-| `fEvent` | ID del evento |
-| `fX`, `fY`, `fZ` | Posición del hit (mm) |
-| `fEdep` | Energía depositada (MeV) |
-| `fdEdx` | Pérdida de energía por longitud (MeV/mm) |
-| `Ekin` | Energía cinética (MeV) |
-| `TOF` | Tiempo de vuelo (ns) |
-| `TrackLength` | Longitud de trayectoria (mm) |
-| `ScatteringAng` | Ángulo de scattering múltiple (rad) |
-| `Momentum` | Momento (MeV/c) |
+Cada archivo tiene un TTree llamado `Hits` con estos campos:
 
-Los 10 runs por partícula cubren de 1.0 GeV a 10.0 GeV en escala logarítmica, 1 000 eventos cada uno, para un total de 10 000 eventos por clase.
+| Columna | Descripción | Unidades |
+|---|---|---|
+| `fEvent` | ID del evento | entero |
+| `fX`, `fY`, `fZ` | Centro del detector (constante: 0, 0, 1100 mm) | mm |
+| `fEdep` | Energía depositada en el paso | MeV |
+| `fdEdx` | dE/dx = fEdep / longitud del paso | MeV/mm |
+| `Ekin` | Energía cinética al inicio del paso | MeV |
+| `TOF` | Tiempo de vuelo global | ns |
+| `TrackLength` | Longitud total de traza acumulada | mm |
+| `ScatteringAng` | Ángulo de dispersión en el paso | rad |
+| `Momentum` | Módulo del momento | MeV/c |
+
+Nota: `fX`, `fY`, `fZ` son el centro del volumen del detector, no la posición del paso. Son constantes para todos los hits. No sirven como features.
 
 ---
 
@@ -37,259 +38,102 @@ Los 10 runs por partícula cubren de 1.0 GeV a 10.0 GeV en escala logarítmica, 
 
 ```bash
 conda activate ML_HE_Physics
-# numpy 2.2.6 + pandas 2.2.3 + uproot 5.x + xgboost + scikit-learn + shap + optuna
+# numpy >= 2.0, pandas, uproot 5.x, xgboost, scikit-learn
 ```
-
-> numpy tiene que ser >= 2.0 para que pandas no rompa al crear índices string.
-> Si aparece `Cannot convert numpy.ndarray`, ejecutar: `pip install "numpy>=2.0"`
 
 ---
 
-## Plan del notebook (`muon_pion_classifier.ipynb`)
+## Pipeline del notebook
 
-### Paso 1 — Carga de datos hecho
+### 1. Carga de datos y curva de eficiencia
 
-Cargar todos los archivos ROOT y concatenar en un DataFrame de hits:
+Se cargan todos los archivos ROOT por partícula. Para cada run se cuenta cuántos eventos únicos produjeron al menos un hit:
 
 ```python
-branches = ['fEvent', 'fX', 'fY', 'fZ', 'fEdep', 'fdEdx',
-            'Ekin', 'TOF', 'TrackLength', 'ScatteringAng', 'Momentum']
-
-def load_hits(pattern):
-    files = sorted(glob(pattern))
-    dfs = []
-    for run_id, path in enumerate(files):
-        with uproot.open(path) as f:
-            tree = f['Hits']
-            data = {b: tree[b].array(library='np').astype(np.float64) for b in branches}
-            arr = np.column_stack([data[b] for b in branches])
-            df = pd.DataFrame(arr, columns=branches)
-            df['fEvent'] = df['fEvent'].astype(int)
-            df['run_id'] = run_id
-            df['event_uid'] = df['run_id'].astype(str) + '_' + df['fEvent'].astype(str)
-        dfs.append(df)
-    return pd.concat(dfs, ignore_index=True)
-
-hits_mu = load_hits('data/muon/output_run*.root')
-hits_pi = load_hits('data/pion/output_run*.root')
+epsilon(p) = N_eventos_detectados / 1000
 ```
 
----
+Eso da la curva de eficiencia de detección vs momento. Para muones, epsilon sube de 0 a ~1 alrededor de 170 MeV/c y se mantiene alta. Para piones, el umbral es ~183 MeV/c y la eficiencia en el plateau es un poco menor (~85-90%) porque algunos piones interaccionan inelásticamente en el hierro.
 
-### Paso 2 — Feature engineering hecho
+### 2. Feature engineering
 
-Agregar hits → 1 fila por evento usando `groupby('event_uid')`:
+Cada evento puede tener varios pasos (steps) dentro del centellador. Se agregan en una sola fila por evento:
 
-| Grupo | Features |
+| Feature | Descripción |
 |---|---|
-| Conteo | `n_hits`, `n_unique_cells` |
-| Energía dep. | `edep_sum`, `edep_max`, `edep_std` |
-| dE/dx | `dedx_mean`, `dedx_max`, `dedx_std` |
-| Ekin | `ekin_first`, `ekin_last`, `ekin_loss` |
-| TOF | `tof_first`, `tof_last`, `tof_range` |
-| Track length | `track_first`, `track_last`, `track_mean` |
-| Scattering | `scat_mean`, `scat_max`, `scat_std` |
-| Geometría | `radial_spread`, `z_span` |
+| `n_steps` | Número de pasos registrados en el centellador |
+| `edep_total`, `edep_mean`, `edep_max`, `edep_std` | Depósito de energía total y sus estadísticos |
+| `dedx_mean`, `dedx_max`, `dedx_std` | dE/dx medio, máximo y desviación |
+| `ekin_entry`, `ekin_exit`, `ekin_loss` | Energía cinética al entrar y salir del centellador |
+| `tof_entry`, `tof_exit`, `tof_range` | Tiempo de vuelo al entrar, salir y rango temporal |
+| `track_entry`, `track_exit`, `track_in_scint` | Longitud de traza acumulada al entrar y salir |
+| `scat_mean`, `scat_max`, `scat_sum` | Ángulo de dispersión dentro del centellador |
+| `momentum_entry`, `momentum_exit`, `momentum_loss` | Momento al entrar y salir |
 
-Resultado: DataFrame `df` con ~22 features + columna `label` (1=muón, 0=pión).
+Las columnas de posición (`fX`, `fY`, `fZ`) se excluyen porque son constantes.
 
----
+### 3. Balance de clases
 
-### Paso 3 — Train/test split hecho
+Se toman hasta 50 000 eventos por clase:
 
 ```python
-from sklearn.model_selection import train_test_split
-
-FEATURES = [c for c in df.columns if c not in ('event_uid', 'label')]
-X = df[FEATURES]
-y = df['label']
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, stratify=y, random_state=42
-)
+N = min(50_000, len(events_mu), len(events_pi))
 ```
 
----
+El dataset final tiene N muones y N piones mezclados y barajados.
 
-### Paso 4 — Entrenamiento XGBoost hecho
+### 4. Entrenamiento
 
 ```python
-from xgboost import XGBClassifier
-
-model = XGBClassifier(
-    n_estimators=300,
-    max_depth=4,
+XGBClassifier(
+    n_estimators=400,
+    max_depth=5,
     learning_rate=0.05,
     subsample=0.8,
     colsample_bytree=0.8,
     eval_metric='logloss',
-    early_stopping_rounds=20,
-    random_state=42
-)
-
-model.fit(
-    X_train, y_train,
-    eval_set=[(X_test, y_test)],
-    verbose=50
+    early_stopping_rounds=20
 )
 ```
 
----
+Split 80/20 estratificado por clase. El modelo para en cuanto el log-loss en validación deja de bajar.
 
-### Paso 5 — Evaluación hecho
+### 5. Evaluación
 
-Métricas a reportar:
-- ROC-AUC (métrica principal)
-- Confusion matrix
-- Classification report (precision, recall, F1)
-- Feature importance con SHAP
-- Curvas de aprendizaje
+- Curva ROC y AUC
+- Matriz de confusión
+- Reporte de clasificación (precision, recall, F1)
+- Curva de aprendizaje (log-loss vs round)
+- Importancia de features por ganancia
 
-```python
-from sklearn.metrics import roc_auc_score, confusion_matrix, classification_report
-import shap
+### 6. Análisis por rango de momento
 
-y_pred = model.predict(X_test)
-y_prob = model.predict_proba(X_test)[:, 1]
+Se mapea cada evento a su momento de beam usando `run_id → MOMENTA_GeV`, y se calculan tasa de error y ROC-AUC por bin de momento:
 
-print('ROC-AUC:', roc_auc_score(y_test, y_prob))
-print(classification_report(y_test, y_pred, target_names=['pion', 'muon']))
-
-# SHAP
-explainer = shap.TreeExplainer(model)
-shap_values = explainer.shap_values(X_test)
-shap.summary_plot(shap_values, X_test)
-```
-
----
-
-### Paso 6 — Análisis por energía hecho
-
-Ver dónde falla el clasificador separando por bins de energía:
-
-```python
-# Añadir Ekin media del evento al DataFrame antes del split
-df['ekin_mean_event'] = ...  # ekin promedio de los hits del evento
-
-# Bins: [10, 50, 100, 300, 1000] MeV
-# Para cada bin: calcular ROC-AUC y accuracy
-# Esperado: peor separación en la región MIP (βγ ~ 3-4) donde μ y π son idénticos
-```
-
----
-
-### Paso 7 — Optimización de hiperparámetros PENDIENTE
-
-Usar Optuna para buscar los mejores hiperparámetros:
-
-```python
-import optuna
-
-def objective(trial):
-    params = {
-        'n_estimators': trial.suggest_int('n_estimators', 100, 500),
-        'max_depth': trial.suggest_int('max_depth', 3, 8),
-        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-        'subsample': trial.suggest_float('subsample', 0.6, 1.0),
-        'min_child_weight': trial.suggest_int('min_child_weight', 1, 10),
-        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
-    }
-    model = XGBClassifier(**params, eval_metric='logloss', random_state=42)
-    model.fit(X_train, y_train)
-    return roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
-
-study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=50)
-print('Best params:', study.best_params)
-```
-
----
-
-### Paso 8 — Clase `MuonPionClassifier` PENDIENTE
-
-Todo el pipeline en una clase:
-
-```python
-class MuonPionClassifier:
-    def __init__(self, **xgb_params): ...
-    def load_data(self, muon_pattern, pion_pattern): ...
-    def engineer_features(self, hits_df, label): ...
-    def train(self, X_train, y_train): ...
-    def evaluate(self, X_test, y_test): ...
-    def predict(self, hits_df): ...
-    def save(self, path): ...
-    def load(self, path): ...
-```
-
----
-
-## Resultados
-
-### Métricas globales
-
-| Métrica | Valor |
+| Rango | Por qué es interesante |
 |---|---|
-| ROC-AUC | 1.000 |
-| Eventos de prueba | 4 000 (2 000 muones, 2 000 piones) |
-| Clasificaciones correctas | 3 999 / 4 000 |
-| Tasa de error global | 0.025 % |
-
-Un solo evento fue mal clasificado: un pión predicho como muón. Ningún muón fue clasificado como pión.
-
-### Matriz de confusión
-
-|  | Predicho: pión (0) | Predicho: muón (1) |
-|---|---|---|
-| Real: pión (0) | 1 999 | 1 |
-| Real: muón (1) | 0 | 2 000 |
-
-### Curva ROC y curva de aprendizaje
-
-AUC = 1.00. El log-loss desciende desde ~0.65 en el primer round hasta prácticamente cero, con convergencia cerca del round 250. No hay señal de sobreajuste.
-
-### Importancia de características (gain)
-
-| Feature | Gain |
-|---|---|
-| `dedx_std` | 1 802.4 |
-| `dedx_mean` | 851.1 |
-| `dedx_max` | 631.9 |
-| `tof_range` | 81.2 |
-| `tof_first` | 8.6 |
-| `n_unique_cells` | 5.7 |
-| `n_hits` | 5.0 |
-| `radial_spread` | 4.5 |
-| `scat_max` | 3.0 |
-| `edep_sum` | 2.2 |
-| `track_mean` | 2.1 |
-| `edep_std` | 1.6 |
-| `edep_max` | 1.5 |
-| `scat_std` | 1.4 |
-| `track_first` | 1.1 |
-
-Las tres variables de dE/dx concentran el 84 % de la ganancia total. El clasificador discrimina principalmente por la variabilidad del dE/dx paso a paso: el pión inicia cascadas hadrónicas que producen fluctuaciones grandes en los depósitos, el muón deja una traza de ionización comparativamente uniforme. `tof_range` entra como cuarta variable porque los secundarios de la cascada llegan al detector con tiempos retrasados respecto al primario.
-
-### Error por rango de energía cinética
-
-| Rango | N eventos | Error (%) | ROC-AUC |
-|---|---|---|---|
-| 1.0–1.5 GeV | 825 | 0.00 | 1.0 |
-| 1.5–2.5 GeV | 753 | 0.00 | 1.0 |
-| 2.5–4.5 GeV | 789 | 0.00 | 1.0 |
-| 4.5–7.5 GeV | 824 | 0.12 | 1.0 |
-| 7.5–10 GeV | 808 | 0.00 | 1.0 |
-
-El único rango con errores es 4.5–7.5 GeV, con una tasa de 0.12 %. A esas energías la probabilidad de interacción hadrónica del pión es intermedia: algunos eventos no desarrollan una cascada completa y su perfil de depósito se acerca al del muón. El AUC de 1.0 en todos los rangos confirma que el modelo ordena correctamente los scores de probabilidad en cualquier región del espectro, aunque en ese intervalo cometa algunas asignaciones de clase en el umbral de decisión.
+| 0.5-1 GeV/c | Zona de transición, eficiencia todavía sube |
+| 1-2 GeV/c | Antes del plateau, mayor separación en dE/dx |
+| 2-4 GeV/c | Plateau inicial |
+| 4-7 GeV/c | Plateau estable, separación solo por TOF y scattering |
+| 7-10 GeV/c | Alto momento, poca diferencia entre partículas |
 
 ---
 
-## Notas de física
+## Por qué es difícil este problema
 
-- En la región MIP (mínimo de ionización, βγ ~ 3-4, Ekin ~ 300 MeV para piones), dE/dx es idéntico para μ y π. Aquí el clasificador tiene que apoyarse en `ScatteringAng` y la varianza de `fEdep`.
-- Los piones sufren interacciones hadrónicas que producen fluctuaciones grandes en `fEdep` y `ScatteringAng`. Son las features más útiles a alta energía.
-- A baja energía (< 100 MeV), la diferencia de masa (μ: 105.7 MeV, π: 139.6 MeV) hace la separación más sencilla por cinemática.
+En el plateau (p > 1 GeV/c), a igual momento, μ⁺ y π⁺ depositan prácticamente la misma energía por unidad de longitud. La curva de Bethe-Bloch en función de bγ es universal para partículas cargadas pesadas, y a esos momenta ambas tienen bγ > 3. Las diferencias que quedan son:
+
+- **TOF**: el muón es más ligero, llega antes al centellador a igual momento.
+- **TrackLength**: recorre una trayectoria distinta antes de entrar al centellador.
+- **ScatteringAngle**: el pión puede tener dispersión hadrónica residual.
+
+Debajo de 500 MeV/c, la diferencia de masa (m_π/m_μ = 1.32) produce una separación visible en dE/dx porque las dos partículas están en puntos distintos de la curva de Bethe-Bloch. Ahí el clasificador lo tiene más fácil.
 
 ---
 
 ## Referencias
-- Simulaciones Geant4: `../Pion and muon simulation/`
+
+- Simulaciones: `../Pion and muon simulation/simulation_mu/` y `../simulation_pi/`
+- Plots Bethe-Bloch: `../Pion and muon simulation/plot_bethe_bloch.py`
+- Imagenes: `../Pion and muon simulation/img/`
