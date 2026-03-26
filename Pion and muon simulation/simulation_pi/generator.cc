@@ -1,19 +1,19 @@
 #include "generator.hh"
+#include "G4SystemOfUnits.hh"
 
 MyPrimaryGenerator::MyPrimaryGenerator()
 {
 	fParticleGun = new G4ParticleGun(1);
-	
+
 	G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
-	G4String particleName="pi+";
 	G4ParticleDefinition *particle = particleTable->FindParticle("pi+");
-	
-	G4ThreeVector pos(0., 0., 0.);
+
+	G4ThreeVector pos(0., 0., -2.*m);
 	G4ThreeVector mom(0., 0., 1.);
-	
+
 	fParticleGun->SetParticlePosition(pos);
 	fParticleGun->SetParticleMomentumDirection(mom);
-	fParticleGun->SetParticleMomentum(100.*GeV);
+	fParticleGun->SetParticleEnergy(100.*GeV);   // default; sobreescrito por barrido_continuo.mac
 	fParticleGun->SetParticleDefinition(particle);
 }
 
@@ -23,6 +23,6 @@ MyPrimaryGenerator::~MyPrimaryGenerator()
 }
 
 void MyPrimaryGenerator::GeneratePrimaries(G4Event *anEvent)
-{	
+{
 	fParticleGun->GeneratePrimaryVertex(anEvent);
 }

@@ -1,184 +1,161 @@
-/gun/energy 1.0000 GeV
+/gun/momentumAmp 0.0500 GeV
 /run/beamOn 1000
-
-/gun/energy 1.0403 GeV
+/gun/momentumAmp 0.0535 GeV
 /run/beamOn 1000
-
-/gun/energy 1.0822 GeV
+/gun/momentumAmp 0.0572 GeV
 /run/beamOn 1000
-
-/gun/energy 1.1259 GeV
+/gun/momentumAmp 0.0611 GeV
 /run/beamOn 1000
-
-/gun/energy 1.1714 GeV
+/gun/momentumAmp 0.0654 GeV
 /run/beamOn 1000
-
-/gun/energy 1.2189 GeV
+/gun/momentumAmp 0.0699 GeV
 /run/beamOn 1000
-
-/gun/energy 1.2684 GeV
+/gun/momentumAmp 0.0748 GeV
 /run/beamOn 1000
-
-/gun/energy 1.3200 GeV
+/gun/momentumAmp 0.0800 GeV
 /run/beamOn 1000
-
-/gun/energy 1.3739 GeV
+/gun/momentumAmp 0.0855 GeV
 /run/beamOn 1000
-
-/gun/energy 1.4301 GeV
+/gun/momentumAmp 0.0914 GeV
 /run/beamOn 1000
-
-/gun/energy 1.4888 GeV
+/gun/momentumAmp 0.0978 GeV
 /run/beamOn 1000
-
-/gun/energy 1.5500 GeV
+/gun/momentumAmp 0.1046 GeV
 /run/beamOn 1000
-
-/gun/energy 1.6139 GeV
+/gun/momentumAmp 0.1118 GeV
 /run/beamOn 1000
-
-/gun/energy 1.6806 GeV
+/gun/momentumAmp 0.1196 GeV
 /run/beamOn 1000
-
-/gun/energy 1.7502 GeV
+/gun/momentumAmp 0.1279 GeV
 /run/beamOn 1000
-
-/gun/energy 1.8228 GeV
+/gun/momentumAmp 0.1367 GeV
 /run/beamOn 1000
-
-/gun/energy 1.8986 GeV
+/gun/momentumAmp 0.1462 GeV
 /run/beamOn 1000
-
-/gun/energy 1.9776 GeV
+/gun/momentumAmp 0.1564 GeV
 /run/beamOn 1000
-
-/gun/energy 2.0601 GeV
+/gun/momentumAmp 0.1672 GeV
 /run/beamOn 1000
-
-/gun/energy 2.1462 GeV
+/gun/momentumAmp 0.1788 GeV
 /run/beamOn 1000
-
-/gun/energy 2.2361 GeV
+/gun/momentumAmp 0.1912 GeV
 /run/beamOn 1000
-
-/gun/energy 2.3299 GeV
+/gun/momentumAmp 0.2045 GeV
 /run/beamOn 1000
-
-/gun/energy 2.4278 GeV
+/gun/momentumAmp 0.2187 GeV
 /run/beamOn 1000
-
-/gun/energy 2.5299 GeV
+/gun/momentumAmp 0.2338 GeV
 /run/beamOn 1000
-
-/gun/energy 2.6367 GeV
+/gun/momentumAmp 0.2500 GeV
 /run/beamOn 1000
-
-/gun/energy 2.7483 GeV
+/gun/momentumAmp 0.2674 GeV
 /run/beamOn 1000
-
-/gun/energy 2.8648 GeV
+/gun/momentumAmp 0.2859 GeV
 /run/beamOn 1000
-
-/gun/energy 2.9866 GeV
+/gun/momentumAmp 0.3058 GeV
 /run/beamOn 1000
-
-/gun/energy 3.1139 GeV
+/gun/momentumAmp 0.3270 GeV
 /run/beamOn 1000
-
-/gun/energy 3.2469 GeV
+/gun/momentumAmp 0.3497 GeV
 /run/beamOn 1000
-
-/gun/energy 3.3858 GeV
+/gun/momentumAmp 0.3739 GeV
 /run/beamOn 1000
-
-/gun/energy 3.5310 GeV
+/gun/momentumAmp 0.3999 GeV
 /run/beamOn 1000
-
-/gun/energy 3.6825 GeV
+/gun/momentumAmp 0.4276 GeV
 /run/beamOn 1000
-
-/gun/energy 3.8409 GeV
+/gun/momentumAmp 0.4573 GeV
 /run/beamOn 1000
-
-/gun/energy 4.0063 GeV
+/gun/momentumAmp 0.4890 GeV
 /run/beamOn 1000
-
-/gun/energy 4.1791 GeV
+/gun/momentumAmp 0.5229 GeV
 /run/beamOn 1000
-
-/gun/energy 4.3597 GeV
+/gun/momentumAmp 0.5592 GeV
 /run/beamOn 1000
-
-/gun/energy 4.5483 GeV
+/gun/momentumAmp 0.5980 GeV
 /run/beamOn 1000
-
-/gun/energy 4.7451 GeV
+/gun/momentumAmp 0.6394 GeV
 /run/beamOn 1000
-
-/gun/energy 4.9506 GeV
+/gun/momentumAmp 0.6838 GeV
 /run/beamOn 1000
-
-/gun/energy 5.1649 GeV
+/gun/momentumAmp 0.7312 GeV
 /run/beamOn 1000
-
-/gun/energy 5.3885 GeV
+/gun/momentumAmp 0.7819 GeV
 /run/beamOn 1000
-
-/gun/energy 5.6218 GeV
+/gun/momentumAmp 0.8362 GeV
 /run/beamOn 1000
-
-/gun/energy 5.8651 GeV
+/gun/momentumAmp 0.8942 GeV
 /run/beamOn 1000
-
-/gun/energy 6.1188 GeV
+/gun/momentumAmp 0.9562 GeV
 /run/beamOn 1000
-
-/gun/energy 6.3833 GeV
+/gun/momentumAmp 1.0225 GeV
 /run/beamOn 1000
-
-/gun/energy 6.6590 GeV
+/gun/momentumAmp 1.0935 GeV
 /run/beamOn 1000
-
-/gun/energy 6.9462 GeV
+/gun/momentumAmp 1.1693 GeV
 /run/beamOn 1000
-
-/gun/energy 7.2456 GeV
+/gun/momentumAmp 1.2504 GeV
 /run/beamOn 1000
-
-/gun/energy 7.5575 GeV
+/gun/momentumAmp 1.3372 GeV
 /run/beamOn 1000
-
-/gun/energy 7.8823 GeV
+/gun/momentumAmp 1.4299 GeV
 /run/beamOn 1000
-
-/gun/energy 8.2205 GeV
+/gun/momentumAmp 1.5291 GeV
 /run/beamOn 1000
-
-/gun/energy 8.5727 GeV
+/gun/momentumAmp 1.6352 GeV
 /run/beamOn 1000
-
-/gun/energy 8.9392 GeV
+/gun/momentumAmp 1.7486 GeV
 /run/beamOn 1000
-
-/gun/energy 9.3208 GeV
+/gun/momentumAmp 1.8699 GeV
 /run/beamOn 1000
-
-/gun/energy 9.7178 GeV
+/gun/momentumAmp 1.9996 GeV
 /run/beamOn 1000
-
-/gun/energy 9.8996 GeV
+/gun/momentumAmp 2.1384 GeV
 /run/beamOn 1000
-
-/gun/energy 9.9500 GeV
+/gun/momentumAmp 2.2867 GeV
 /run/beamOn 1000
-
-/gun/energy 9.9800 GeV
+/gun/momentumAmp 2.4453 GeV
 /run/beamOn 1000
-
-/gun/energy 9.9950 GeV
+/gun/momentumAmp 2.6149 GeV
 /run/beamOn 1000
-
-/gun/energy 10.000 GeV
+/gun/momentumAmp 2.7963 GeV
 /run/beamOn 1000
-
+/gun/momentumAmp 2.9903 GeV
+/run/beamOn 1000
+/gun/momentumAmp 3.1977 GeV
+/run/beamOn 1000
+/gun/momentumAmp 3.4195 GeV
+/run/beamOn 1000
+/gun/momentumAmp 3.6568 GeV
+/run/beamOn 1000
+/gun/momentumAmp 3.9104 GeV
+/run/beamOn 1000
+/gun/momentumAmp 4.1817 GeV
+/run/beamOn 1000
+/gun/momentumAmp 4.4717 GeV
+/run/beamOn 1000
+/gun/momentumAmp 4.7819 GeV
+/run/beamOn 1000
+/gun/momentumAmp 5.1136 GeV
+/run/beamOn 1000
+/gun/momentumAmp 5.4684 GeV
+/run/beamOn 1000
+/gun/momentumAmp 5.8477 GeV
+/run/beamOn 1000
+/gun/momentumAmp 6.2533 GeV
+/run/beamOn 1000
+/gun/momentumAmp 6.6871 GeV
+/run/beamOn 1000
+/gun/momentumAmp 7.1510 GeV
+/run/beamOn 1000
+/gun/momentumAmp 7.6470 GeV
+/run/beamOn 1000
+/gun/momentumAmp 8.1775 GeV
+/run/beamOn 1000
+/gun/momentumAmp 8.7447 GeV
+/run/beamOn 1000
+/gun/momentumAmp 9.3513 GeV
+/run/beamOn 1000
+/gun/momentumAmp 10.0000 GeV
+/run/beamOn 1000
 exit
