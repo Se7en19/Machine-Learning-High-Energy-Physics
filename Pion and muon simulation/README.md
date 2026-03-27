@@ -153,13 +153,6 @@ Eje Y lineal, eje X en GeV/c (log). Es el formato estándar de los plots de iden
 
 Distribución del dE/dx por paso en escala log-Y. La forma asimétrica con cola larga hacia valores altos es la distribución de Landau, característica de capas delgadas. El MPV está alrededor de 0.17-0.20 MeV/mm para BC404. La cola representa pasos con rayos delta energéticos.
 
----
-
-### Overlay μ⁺ vs π⁺ en βγ
-
-![Bethe-Bloch overlay](img/bethe_bloch_overlay.png)
-
-Mediana de dE/dx por bin de βγ para las dos partículas. Se superponen casi perfectamente porque la curva de Bethe-Bloch es universal en βγ para partículas con la misma carga y masa >> m_electrón. La separación entre μ⁺ y π⁺ desaparece en este eje. Para verla hay que pasar a momentum.
 
 ---
 
