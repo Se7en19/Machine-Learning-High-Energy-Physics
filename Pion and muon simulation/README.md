@@ -21,7 +21,8 @@ Pion and muon simulation/
     ├── dedx_vs_momentum.png
     ├── landau_distribution.png
     ├── bethe_bloch_overlay.png
-    └── pid_combined.png
+    ├── pid_combined.png
+    └── efficiency_curve.png
 ```
 
 ---
@@ -161,6 +162,14 @@ Distribución del dE/dx por paso en escala log-Y. La forma asimétrica con cola 
 ![PID combinado](img/pid_combined.png)
 
 Histogramas 2D de las dos partículas en un solo panel. Azul: μ⁺. Rojo: π⁺. A igual momento, el π⁺ tiene mayor dE/dx porque su masa mayor implica menor βγ y por tanto está en una parte más alta de la curva de Bethe-Bloch. La separación entre las dos curvas es visible entre 0.1 y 0.5 GeV/c. Por encima de 1 GeV/c las curvas convergen en el plateau y el dE/dx ya no separa bien las dos especies.
+
+---
+
+### Curva de eficiencia
+
+![Curva de eficiencia](img/efficiency_curve.png)
+
+Fracción de eventos donde la partícula primaria llega al centellador, en función del momento. Los muones no alcanzan el detector por debajo de ~170 MeV/c; los piones, por debajo de ~183 MeV/c. La curva sube de cero a ~100% en una banda de transición estrecha y se estabiliza a partir de ~300 MeV/c. El desplazamiento entre las dos curvas refleja la mayor masa del pión: igual momento implica menor velocidad, y más energía perdida en el hierro.
 
 ---
 
