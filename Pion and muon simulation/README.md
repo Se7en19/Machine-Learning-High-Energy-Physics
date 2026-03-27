@@ -140,7 +140,7 @@ Misma información en función de β = v/c. Los datos del muón aparecen comprim
 
 ---
 
-### dE/dx vs momento (estilo PID)
+### dE/dx vs momento
 
 ![dE/dx vs momento](img/dedx_vs_momentum.png)
 
