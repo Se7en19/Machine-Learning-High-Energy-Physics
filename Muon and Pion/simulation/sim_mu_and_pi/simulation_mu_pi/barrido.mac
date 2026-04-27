@@ -1,0 +1,44 @@
+/gun/energy 10 MeV
+/run/beamOn 1000
+
+/gun/energy 20 MeV
+/run/beamOn 1000
+
+/gun/energy 30 MeV
+/run/beamOn 1000
+
+/gun/energy 40 MeV
+/run/beamOn 1000
+
+/gun/energy 50 MeV
+/run/beamOn 1000
+
+/gun/energy 75 MeV
+/run/beamOn 1000
+
+/gun/energy 100 MeV
+/run/beamOn 1000
+
+/gun/energy 150 MeV
+/run/beamOn 1000
+
+/gun/energy 200 MeV
+/run/beamOn 1000
+
+/gun/energy 300 MeV
+/run/beamOn 1000
+
+/gun/energy 400 MeV
+/run/beamOn 1000
+
+/gun/energy 600 MeV
+/run/beamOn 1000
+
+/gun/energy 800 MeV
+/run/beamOn 1000
+
+/gun/energy 1000 MeV
+/run/beamOn 1000
+
+
+exit

@@ -1,0 +1,4 @@
+/home/michaela9/Descargas/simulation_mu_pi/build/CMakeFiles/sim.dir
+/home/michaela9/Descargas/simulation_mu_pi/build/CMakeFiles/Simulation.dir
+/home/michaela9/Descargas/simulation_mu_pi/build/CMakeFiles/edit_cache.dir
+/home/michaela9/Descargas/simulation_mu_pi/build/CMakeFiles/rebuild_cache.dir
