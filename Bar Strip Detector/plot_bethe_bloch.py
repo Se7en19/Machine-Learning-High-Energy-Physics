@@ -426,6 +426,8 @@ def plot_detector_layout(out_dir, seed=42):
     footprint_L2 = round(x_fe * dist_L2 / (-z_src), 1)  # 53.1 cm
     tx_acc       = x_bar * (-z_src) / dist_L1             # 33.28 cm
     theta_acc    = np.degrees(np.arctan(tx_acc / (-z_src)))  # ~9.4°
+    tx_lat       = x_fe / (1.0 + z_fe1 / (-z_src))        # 25.93 cm (Fe lateral exit)
+    theta_lat    = np.degrees(np.arctan(tx_lat / (-z_src)))  # ~7.4°
 
     # ── Figure layout ────────────────────────────────────────────────────────
     fig = plt.figure(figsize=(21, 7))
@@ -497,22 +499,39 @@ def plot_detector_layout(out_dir, seed=42):
         ax.plot([z_stop], [x_stop], "x",
                 color="steelblue", ms=7, mew=1.8, zorder=3)
 
-    # Acceptance limit lines (dashed purple) — NEW
+    # Representative pion hits that DO reach the scintillator (~10%)
+    for tx_pi in [-6, 20, -18]:
+        x_hit_pi = tx_pi * dist_L1 / (-z_src)
+        if abs(x_hit_pi) < x_bar:
+            ax.plot([z_L1], [x_hit_pi], "o", color="tomato", ms=5, zorder=3)
+
+    # Acceptance limit lines (dashed purple) — θ_acc ≈ 9.4°
     z_ext    = z_L2 + 10
     x_ext    = x_bar * (z_ext - z_src) / dist_L1
     ax.plot([z_src, z_ext], [0,  x_ext], color="#8B008B",
             ls="--", lw=1.3, alpha=0.82, zorder=2)
     ax.plot([z_src, z_ext], [0, -x_ext], color="#8B008B",
             ls="--", lw=1.3, alpha=0.82, zorder=2)
-    ax.annotate(rf"$\theta_{{acc}}\approx{theta_acc:.1f}°$",
-                xy=(z_L1 + 2, x_bar + 1.5),
-                fontsize=9, color="#8B008B", va="bottom", ha="left")
+    ax.text(20, 43, rf"$\theta_{{acc}}\approx{theta_acc:.1f}°$",
+            fontsize=9, color="#8B008B", va="bottom", ha="left",
+            rotation=18, rotation_mode='anchor', zorder=5)
+
+    # Lateral-face limit lines (dashed goldenrod) — θ_lat ≈ 7.4°
+    x_ext_lat = tx_lat * (z_ext - z_src) / (-z_src)
+    ax.plot([z_src, z_ext], [0,  x_ext_lat], color="goldenrod",
+            ls="--", lw=1.3, alpha=0.82, zorder=2)
+    ax.plot([z_src, z_ext], [0, -x_ext_lat], color="goldenrod",
+            ls="--", lw=1.3, alpha=0.82, zorder=2)
+    ax.text(10, 28, rf"$\theta_{{lat}}\approx{theta_lat:.1f}°$",
+            fontsize=9, color="goldenrod", va="bottom", ha="left",
+            rotation=14, rotation_mode='anchor', zorder=5)
 
     # Source star
     ax.plot([z_src], [0], "*", color="darkred", ms=13, zorder=5)
     ax.annotate("Fuente\n(0, 0, −2 m)\n→ dirección +z",
-                xy=(z_src, 0), xytext=(z_src + 25, 28),
+                xy=(z_src, 0), xytext=(z_src - 8, -40),
                 fontsize=8.5, fontweight="bold", color="darkred", zorder=5,
+                arrowprops=dict(arrowstyle="->", color="darkred", lw=1.2),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
                           edgecolor="darkred", alpha=0.92))
 
@@ -532,14 +551,18 @@ def plot_detector_layout(out_dir, seed=42):
                label="fuente puntual"),
         Line2D([0], [0], color="darkorange",             lw=2,
                label=r"$\mu^+$ (atraviesa el Fe)"),
+        Line2D([0], [0], marker="o", color="darkorange", linestyle="None",
+               ms=5, label=r"impacto $\mu^+$ en centellador"),
         Line2D([0], [0], color="steelblue",              lw=1.5, ls="--",
                label=r"$\pi^+$ (absorbido en Fe)"),
         Line2D([0], [0], marker="x", color="steelblue", linestyle="None",
                ms=7, mew=1.8, label="absorción hadrónica"),
-        Line2D([0], [0], marker="o", color="darkorange", linestyle="None",
-               ms=5, label="impacto en centellador"),
+        Line2D([0], [0], marker="o", color="tomato",     linestyle="None",
+               ms=5, label=r"impacto $\pi^+$ (≈10%)"),
         Line2D([0], [0], color="#8B008B",                lw=1.5, ls="--",
                label=rf"límite geom. $\theta_{{acc}}\approx{theta_acc:.1f}°$"),
+        Line2D([0], [0], color="goldenrod",              lw=1.5, ls="--",
+               label=rf"cara lateral $\theta_{{lat}}\approx{theta_lat:.1f}°$"),
     ]
     ax.legend(handles=legend_elems, fontsize=8.5, loc="upper left", framealpha=0.88)
     ax.set_xlim(-218, 118)
@@ -580,9 +603,9 @@ def plot_detector_layout(out_dir, seed=42):
                                2 * footprint, 2 * footprint,
                                facecolor="none", edgecolor="darkorange",
                                lw=1.3, ls="--", zorder=3))
-        ax.text(0, -footprint + 1.8,
+        ax.text(-footprint + 2, -footprint + 1.8,
                 rf"huella del haz  $\pm${footprint:.1f} cm",
-                ha="center", va="bottom", fontsize=7.5,
+                ha="left", va="bottom", fontsize=7.5,
                 color="darkorange", alpha=0.92, zorder=3)
 
         mask = (np.abs(x_hits) < x_bar) & (np.abs(y_hits) < x_bar)
@@ -680,8 +703,8 @@ def plot_overlay(mu, pi, out_dir):
     ax.set_xlim(bg_range); ax.set_ylim(DEDX_MIN, DEDX_MAX)
     ax.legend(fontsize=10, framealpha=0.8)
     _add_info(ax)
-    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=13)
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=13, y=0.96)
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "bethe_bloch_overlay.png")
 
 
@@ -747,8 +770,8 @@ def plot_pid_combined(mu, pi, out_dir):
     ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
     ax.set_xlim(p_range_GeV); ax.set_ylim(0, DEDX_LIN_MAX)
     _add_info(ax)
-    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=13)
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=13, y=0.96)
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "pid_combined.png")
 
 
@@ -846,7 +869,7 @@ def plot_efficiency(glob_pattern: str, out_dir: str, n_total: int = 1000):
 
     fig, ax = plt.subplots(figsize=(10, 6))
     fig.suptitle(r"Eficiencia del detector vs momento  —  Bar Strip Detector (70 cm Fe + BC404)",
-                 fontsize=13)
+                 fontsize=13, y=0.96)
 
     ax.semilogx(mu_p, mu_eff, 'o-', color="steelblue", lw=2, ms=4,
                 label=r"$\mu^+$")
@@ -859,7 +882,7 @@ def plot_efficiency(glob_pattern: str, out_dir: str, n_total: int = 1000):
     ax.legend(fontsize=11, framealpha=0.85)
     _add_info(ax)
 
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "efficiency_vs_momentum.png")
 
 
@@ -989,11 +1012,11 @@ def plot_efficiency_vs_angle(glob_pattern: str, out_dir: str, n_events_per_run: 
 
     ax.axvline(theta_lateral, color="goldenrod",  ls=":", lw=1.8, alpha=0.90, zorder=1)
     ax.axvline(theta_geom,    color="#8B008B",     ls=":", lw=1.8, alpha=0.90, zorder=1)
-    ax.text(theta_lateral + 0.15, 1.04,
+    ax.text(theta_lateral + 0.15, 1.09,
             f"cara lateral\n({theta_lateral:.1f}°)",
             fontsize=7.5, color="goldenrod", va="top", ha="left",
             transform=ax.get_xaxis_transform())
-    ax.text(theta_geom + 0.15, 1.04,
+    ax.text(theta_geom + 0.15, 1.09,
             f"límite geom.\n({theta_geom:.1f}°)",
             fontsize=7.5, color="#8B008B", va="top", ha="left",
             transform=ax.get_xaxis_transform())
@@ -1008,8 +1031,8 @@ def plot_efficiency_vs_angle(glob_pattern: str, out_dir: str, n_events_per_run: 
     _add_info(ax)
     fig.suptitle(
         r"Eficiencia vs ángulo del cono $\theta$ — Bar Strip Detector (70 cm Fe + BC404)",
-        fontsize=13)
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+        fontsize=13, y=0.97)
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "efficiency_vs_angle.png")
 
 
