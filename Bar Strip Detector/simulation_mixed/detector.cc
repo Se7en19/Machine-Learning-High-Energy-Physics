@@ -48,6 +48,12 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
 	G4String pname = aStep->GetTrack()->GetDefinition()->GetParticleName();
 	G4int particleID = (pname == "mu+") ? 0 : 1;
 
+	// ConeAngle: ángulo entre la dirección inicial de la traza y el eje z del haz (rad)
+	// Usa GetVertexMomentumDirection() para obtener la dirección original en el vértice,
+	// antes de cualquier dispersión en el absorbedor.
+	G4ThreeVector vdir      = aStep->GetTrack()->GetVertexMomentumDirection();
+	G4double      coneAngle = vdir.angle(G4ThreeVector(0., 0., 1.));
+
 	G4AnalysisManager *man = G4AnalysisManager::Instance();
 
 	man->FillNtupleDColumn(0, posDetector[0]);
@@ -64,6 +70,7 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
 	man->FillNtupleIColumn(11, layerID);
 	man->FillNtupleIColumn(12, barID);
 	man->FillNtupleIColumn(13, particleID);
+	man->FillNtupleDColumn(14, coneAngle);
 	man->AddNtupleRow(0);
 
 	return true;

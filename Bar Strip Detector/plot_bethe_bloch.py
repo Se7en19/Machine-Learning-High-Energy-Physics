@@ -624,6 +624,137 @@ def plot_efficiency(glob_pattern: str, out_dir: str, n_total: int = 1000):
 
 
 # ============================================================================
+# PLOT 9: Eficiencia vs ángulo del cono
+# ============================================================================
+def plot_efficiency_vs_angle(glob_pattern: str, out_dir: str, n_events_per_run: int = 2000):
+    """
+    Efficiency vs initial cone angle θ (angle between particle direction and beam axis z).
+
+    Angle is reconstructed from bar hit positions:
+      Layer 1 (layerID=0): bars along X, displaced in Y → fY ≈ ty × scale_L1
+      Layer 2 (layerID=1): bars along Y, displaced in X → fX ≈ tx × scale_L2
+      scale_L = (z_layer + L_src) / L_src
+
+    Source at z = -2000 mm, Fe face at z = 0.
+    Capa 1 center: z_L1 = 1005 mm  → scale = 3005/2000 = 1.5025
+    Capa 2 center: z_L2 = 1035 mm  → scale = 3035/2000 = 1.5175
+    θ = arctan(sqrt(tx² + ty²) / 2000 mm)   [degrees]
+
+    Angular resolution: ~0.7° per coordinate (one bar pitch = 50 mm / 1.5 / 2000 mm).
+
+    NOTE: for more accurate angles, recompile the simulation with ConeAngle column
+    (column 14 added to detector.cc / run.cc) and re-run. The reconstructed angles
+    here are adequate for the 18-bin plot but carry ~1° systematic uncertainty.
+
+    N_gen(θ) is derived analytically: sample the uniform 70×70 cm target square and
+    histogram the resulting θ distribution, then scale to the total generated events.
+    """
+    files = sorted(glob.glob(glob_pattern))
+    if not files:
+        raise FileNotFoundError(f"No files: {glob_pattern}")
+
+    L_src    = 2000.0   # mm  (source at z = -2 m)
+    z_L1     = 1005.0   # mm  (Capa 1 center z)
+    z_L2     = 1035.0   # mm  (Capa 2 center z)
+    scale_L1 = (z_L1 + L_src) / L_src   # 1.5025
+    scale_L2 = (z_L2 + L_src) / L_src   # 1.5175
+
+    branches = ["fEvent", "fX", "fY", "layerID", "particleID"]
+    print(f"\n--- Eficiencia vs ángulo del cono: {len(files)} archivos ---")
+
+    mu_angles, pi_angles = [], []
+
+    for fpath in files:
+        with uproot.open(fpath) as f:
+            tree = _best_cycle(f)
+            if tree is None:
+                continue
+            d = tree.arrays(branches, library="np")
+
+        for pid_val, ang_list in [(0, mu_angles), (1, pi_angles)]:
+            mask_pid = d["particleID"] == pid_val
+            if mask_pid.sum() == 0:
+                continue
+
+            fX_p  = d["fX"][mask_pid]
+            fY_p  = d["fY"][mask_pid]
+            lay_p = d["layerID"][mask_pid]
+            ev_p  = d["fEvent"][mask_pid]
+
+            for ev in np.unique(ev_p):
+                mask_ev = ev_p == ev
+                lay_ev  = lay_p[mask_ev]
+                fX_ev   = fX_p[mask_ev]
+                fY_ev   = fY_p[mask_ev]
+
+                m0 = lay_ev == 0
+                m1 = lay_ev == 1
+                if m0.sum() == 0 or m1.sum() == 0:
+                    continue   # need both layers for full 2D reconstruction
+
+                ty_mm  = np.median(fY_ev[m0]) / scale_L1
+                tx_mm  = np.median(fX_ev[m1]) / scale_L2
+                r_face = np.sqrt(tx_mm**2 + ty_mm**2)
+                ang_list.append(np.degrees(np.arctan2(r_face, L_src)))
+
+    if not mu_angles and not pi_angles:
+        print("  Sin eventos en ambas capas. Se omite efficiency_vs_angle.")
+        return
+
+    # ── N_gen(θ) teórico: muestreo del cuadrado uniforme 70×70 cm ─────────────
+    rng   = np.random.default_rng(42)
+    N_mc  = 2_000_000
+    tx_mc = rng.uniform(-350.0, 350.0, N_mc)
+    ty_mc = rng.uniform(-350.0, 350.0, N_mc)
+    theta_mc = np.degrees(np.arctan2(np.sqrt(tx_mc**2 + ty_mc**2), L_src))
+
+    theta_max = np.degrees(np.arctan2(np.sqrt(350.0**2 + 350.0**2), L_src))  # ≈ 13.9°
+    n_bins    = 18
+    bin_edges = np.linspace(0.0, theta_max, n_bins + 1)
+    bc        = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+
+    h_mc, _   = np.histogram(theta_mc, bins=bin_edges)
+    p_theory  = h_mc / h_mc.sum()
+
+    n_runs              = len(files)
+    n_total_per_species = n_runs * n_events_per_run / 2.0
+    n_gen               = p_theory * n_total_per_species
+
+    # ── Plot ──────────────────────────────────────────────────────────────────
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    for angles, color, label in [
+        (mu_angles, "steelblue", r"$\mu^+$"),
+        (pi_angles, "tomato",    r"$\pi^+$"),
+    ]:
+        if not angles:
+            continue
+        h_det, _ = np.histogram(angles, bins=bin_edges)
+        eff = np.where(n_gen > 10, h_det / n_gen, np.nan)
+        eff = np.clip(eff, 0.0, 1.05)
+        ax.plot(bc, eff, "o-", color=color, lw=2, ms=5, label=label)
+
+    ax.set_xlabel(r"Ángulo del cono $\theta$ (°)", fontsize=12)
+    ax.set_ylabel(r"$\varepsilon = N_{\mathrm{det}}\,/\,N_{\mathrm{gen}}$", fontsize=12)
+    ax.set_xlim(0.0, theta_max + 0.3)
+    ax.set_ylim(-0.05, 1.10)
+    ax.axhline(0.5, color="gray", ls=":", lw=1, alpha=0.5)
+    ax.legend(fontsize=11, framealpha=0.85)
+    ax.text(0.03, 0.06,
+            r"$\theta$ reconstruido de posiciones de barras" + "\n"
+            r"Capa 1: $f_Y/1.50 \approx t_y$,  Capa 2: $f_X/1.52 \approx t_x$" + "\n"
+            r"resolución $\approx 0.7°$ por coordenada",
+            transform=ax.transAxes, fontsize=8, color="gray",
+            va="bottom", style="italic")
+    _add_info(ax)
+    fig.suptitle(
+        r"Eficiencia vs ángulo del cono $\theta$ — Bar Strip Detector (70 cm Fe + BC404)",
+        fontsize=13)
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    _save(fig, out_dir, "efficiency_vs_angle.png")
+
+
+# ============================================================================
 # Main
 # ============================================================================
 def main(mu_path, pi_path, mixed_path, out_dir):
@@ -645,6 +776,7 @@ def main(mu_path, pi_path, mixed_path, out_dir):
 
     if mixed_path:
         plot_efficiency(mixed_path, out_dir, n_total=1000)
+        plot_efficiency_vs_angle(mixed_path, out_dir, n_events_per_run=2000)
 
     print(f"\nAll plots saved to: {out_dir}")
 

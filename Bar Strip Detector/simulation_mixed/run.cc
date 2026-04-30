@@ -33,6 +33,7 @@ void MyRunAction::BeginOfRunAction(const G4Run *aRun)
 	man->CreateNtupleIColumn("layerID");
 	man->CreateNtupleIColumn("barID");
 	man->CreateNtupleIColumn("particleID");   // 0=mu+, 1=pi+
+	man->CreateNtupleDColumn("ConeAngle");    // 14 — ángulo inicial respecto al eje z (rad)
 	man->FinishNtuple(0);
 }
 
