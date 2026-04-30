@@ -155,7 +155,7 @@ Los 80 archivos ROOT se guardan en `Classifier/data/mixed/output_run0.root` … 
 
 ![Detector layout](img/detector_layout.png)
 
-El diagrama muestra la geometría completa: fuente puntual en z = −2 m, cono de partículas hacia la cara del Fe (70×70 cm), absorbedor, gap de 30 cm y las dos capas de centellador.
+El diagrama muestra la geometría completa: fuente puntual en z = −2 m, cono de partículas hacia la cara del Fe (70×70 cm), absorbedor, gap de 30 cm y las dos capas de centellador. Las líneas moradas discontinuas en la vista lateral delimitan el ángulo de aceptancia geométrica (θ_acc ≈ 9.4°): partículas por encima de ese ángulo llegan más allá de las barras (±50 cm) y no se detectan. En los paneles de cada capa, el rectángulo naranja discontinuo muestra la huella proyectada del haz (±52.6 cm), que supera ligeramente la cobertura del array de barras (±50 cm).
 
 ---
 
@@ -229,11 +229,16 @@ Número de hits en Capa 1 vs Capa 2 para cada especie. Los μ⁺ muestran ~2% de
 
 ![Eficiencia vs ángulo](img/efficiency_vs_angle.png)
 
-ε en función del ángulo del cono θ (ángulo entre la dirección inicial del disparo y el eje z). θ se reconstruye de las posiciones de las barras: la Capa 1 da t_y y la Capa 2 da t_x, proyectando de vuelta hacia la cara del Fe. El ángulo máximo del cono es arctan(35√2 cm / 200 cm) ≈ 13.9°.
+ε en función del ángulo del cono θ, reconstruido de las posiciones centrales de las barras tocadas. El paso de barra de 5 cm limita la resolución angular a ~0.7° por coordenada; de ahí que el plot muestre ~14 puntos discretos y no una curva. Ángulo máximo del cono: arctan(35√2 cm / 200 cm) ≈ 13.9°.
 
-**μ⁺:** ε se mantiene aproximadamente constante para θ < 10°. A ángulos grandes la eficiencia cae porque las partículas recorren más hierro (70/cosθ cm) y porque las más oblicuas pueden salirse de la cobertura geométrica de 1 m × 1 m del centellador.
+El camino dentro del cubo de Fe (70×70×70 cm) depende de por qué cara salga la partícula:
 
-**π⁺:** comportamiento similar pero con escala ~10%. La absorción hadrónica domina en todo el rango angular.
+- θ < 7.4°: sale por la cara trasera, recorre 70/cosθ cm — apenas más que en incidencia normal.
+- 7.4° < θ < 9.4°: sale por una cara lateral. El camino cae rápido: solo ~34 cm a θ ≈ 8.5°. Más oblicua no es más hierro.
+- θ > 9.4°: la partícula llega a |x| o |y| > 50 cm, fuera del alcance de las barras. La eficiencia se va a cero por aceptancia geométrica, no por blindaje adicional.
+
+μ⁺: ε plana hasta ~9°, luego corte abrupto donde acaba la cobertura del centellador.
+π⁺: el mismo corte geométrico a ~9°; el nivel base del ~10% lo pone la absorción hadrónica, sin dependencia angular.
 
 ---
 
@@ -431,7 +436,7 @@ The 80 ROOT files are written to `Classifier/data/mixed/output_run0.root` … `o
 
 ![Detector layout](img/detector_layout.png)
 
-The diagram shows the full geometry: point source at z = −2 m, cone toward the Fe face (70×70 cm), absorber, 30 cm gap, and the two scintillator layers.
+The diagram shows the full geometry: point source at z = −2 m, cone toward the Fe face (70×70 cm), absorber, 30 cm gap, and the two scintillator layers. The purple dashed lines in the side view mark the geometric acceptance limit (θ_acc ≈ 9.4°): particles above that angle arrive beyond the bar array (±50 cm) and are not detected. In each layer panel, the orange dashed rectangle shows the projected beam footprint (±52.6 cm), which slightly overflows the bar coverage (±50 cm).
 
 ---
 
@@ -505,11 +510,16 @@ Hit count in Layer 1 vs Layer 2 for each species. μ⁺ show ~2% asymmetry betwe
 
 ![Efficiency vs angle](img/efficiency_vs_angle.png)
 
-ε as a function of cone angle θ (angle between the initial particle direction and the beam axis z). θ is reconstructed from bar positions: Layer 1 gives t_y and Layer 2 gives t_x, back-projected to the Fe face. Maximum cone angle: arctan(35√2 cm / 200 cm) ≈ 13.9°.
+ε as a function of cone angle θ, reconstructed from hit bar center positions. The 5 cm bar pitch gives ~0.7° angular resolution per coordinate, which is why the plot shows ~14 discrete points rather than a continuous curve. Maximum cone angle: arctan(35√2 cm / 200 cm) ≈ 13.9°.
 
-**μ⁺:** ε is approximately constant for θ < 10°. At larger angles it falls because particles traverse more iron (70/cosθ cm) and the most oblique ones can miss the 1 m × 1 m geometric acceptance of the scintillator.
+The path through the Fe cube (70×70×70 cm) depends on which face the particle exits from:
 
-**π⁺:** similar shape but at the ~10% level. Hadronic absorption dominates across the full angular range.
+- θ < 7.4°: back face exit, path = 70/cosθ cm — barely longer than straight through.
+- 7.4° < θ < 9.4°: lateral face exit, path drops fast — only ~34 cm at θ ≈ 8.5°. More oblique is not more iron.
+- θ > 9.4°: particle arrives at |x| or |y| > 50 cm, past the bar coverage. Efficiency collapses from geometric acceptance loss, not extra shielding.
+
+μ⁺: ε flat up to ~9°, then a sharp cutoff where the scintillator coverage ends.
+π⁺: same geometric cutoff at ~9°; the ~10% floor is set by hadronic absorption, which has no angular dependence.
 
 ---
 

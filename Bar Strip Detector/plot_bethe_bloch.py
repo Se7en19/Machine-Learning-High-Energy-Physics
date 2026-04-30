@@ -393,6 +393,246 @@ def plot_landau(mu, pi, out_dir):
 
 
 # ============================================================================
+# PLOT 4b: Configuración del detector (diagrama esquemático)
+# ============================================================================
+def plot_detector_layout(out_dir, seed=42):
+    """
+    Three-panel schematic of the Bar Strip Detector.
+    Left : ZX side view — cone from source, Fe absorber, scintillator layers.
+    Centre: Capa 1 (20 bars along X, measuring Y).
+    Right : Capa 2 (20 bars along Y, measuring X).
+
+    Added elements:
+    - Dashed acceptance-limit lines (θ_acc ≈ 9.4°) in the side view.
+    - Projected beam footprint rectangle (±52.6 cm) in the layer panels.
+    """
+    from matplotlib.patches import Rectangle
+    from matplotlib.lines import Line2D
+
+    rng = np.random.default_rng(seed)
+
+    # ── Geometry (cm) ────────────────────────────────────────────────────────
+    z_src        = -200.0   # source z
+    z_fe0        =    0.0   # Fe front face
+    z_fe1        =   70.0   # Fe back face
+    x_fe         =   35.0   # Fe half-width
+    z_L1         =  100.5   # Capa 1 centre
+    z_L2         =  103.5   # Capa 2 centre
+    x_bar        =   50.0   # scintillator bar array half-coverage (±50 cm)
+    x_bar_c      =   47.5   # outermost bar centre
+    dist_L1      = z_L1 - z_src           # 300.5 cm
+    dist_L2      = z_L2 - z_src           # 303.5 cm
+    footprint_L1 = round(x_fe * dist_L1 / (-z_src), 1)  # 52.6 cm
+    footprint_L2 = round(x_fe * dist_L2 / (-z_src), 1)  # 53.1 cm
+    tx_acc       = x_bar * (-z_src) / dist_L1             # 33.28 cm
+    theta_acc    = np.degrees(np.arctan(tx_acc / (-z_src)))  # ~9.4°
+
+    # ── Figure layout ────────────────────────────────────────────────────────
+    fig = plt.figure(figsize=(21, 7))
+    fig.suptitle(
+        r"Bar Strip Detector — Configuración del sistema" + "\n"
+        r"Absorbedor: G4\_Fe  70$\times$70$\times$70 cm  |  "
+        r"Centellador: G4\_PLASTIC\_SC\_VINYLTOLUENE (BC404, $\rho$=1.032 g/cm$^3$)",
+        fontsize=11, y=0.99, va="top")
+
+    gs = fig.add_gridspec(1, 3, width_ratios=[3.2, 2, 2],
+                          wspace=0.28, left=0.04, right=0.98,
+                          top=0.87, bottom=0.12)
+    ax_s = fig.add_subplot(gs[0])
+    ax_1 = fig.add_subplot(gs[1])
+    ax_2 = fig.add_subplot(gs[2])
+
+    # ── Side view (ZX plane) ─────────────────────────────────────────────────
+    ax = ax_s
+    ax.set_title("Vista lateral  (plano Z – X,  corte en Y = 0)", fontsize=10, pad=4)
+    ax.set_xlabel("z (cm)", fontsize=10)
+    ax.set_ylabel("x (cm)", fontsize=10)
+
+    # Orange filled cone (full Fe beam cone)
+    x_at_L1 = x_fe * dist_L1 / (-z_src)
+    ax.fill(
+        [z_src, z_fe0, z_L1 + 8, z_L1 + 8, z_fe0, z_src],
+        [0,      x_fe,  x_at_L1 + 2, -(x_at_L1 + 2), -x_fe, 0],
+        color="orange", alpha=0.13, zorder=0)
+
+    # Fe block
+    ax.add_patch(Rectangle((z_fe0, -x_fe), z_fe1 - z_fe0, 2 * x_fe,
+                            facecolor="#C8860A", edgecolor="black",
+                            lw=1.5, alpha=0.72, zorder=1))
+    ax.text((z_fe0 + z_fe1) / 2, 0,
+            r"G4\_Fe" + "\n70×70×70 cm\n= 4.17 λ_I",
+            ha="center", va="center", fontsize=9,
+            fontweight="bold", color="white", zorder=2)
+
+    # Capa 1 (blue vertical bar)
+    ax.add_patch(Rectangle((z_L1 - 0.5, -(x_bar_c + 3)), 1.0, 2 * (x_bar_c + 3),
+                            facecolor="royalblue", edgecolor="royalblue",
+                            alpha=0.80, zorder=2))
+    ax.text(z_L1, x_bar_c + 5,
+            "Capa 1\n(barras X)", ha="center", va="bottom",
+            fontsize=8.5, color="royalblue", fontweight="bold")
+
+    # Capa 2 (red vertical bar)
+    ax.add_patch(Rectangle((z_L2 - 0.5, -(x_bar_c + 3)), 1.0, 2 * (x_bar_c + 3),
+                            facecolor="firebrick", edgecolor="firebrick",
+                            alpha=0.80, zorder=2))
+    ax.text(z_L2, -(x_bar_c + 5),
+            "Capa 2\n(barras Y)", ha="center", va="top",
+            fontsize=8.5, color="firebrick", fontweight="bold")
+
+    # Muon tracks (orange solid)
+    for tx in np.linspace(-28, 28, 6):
+        x_end = tx * (z_L2 + 6 - z_src) / (-z_src)
+        ax.plot([z_src, z_L2 + 6], [0, x_end],
+                color="darkorange", lw=0.9, alpha=0.55, zorder=1)
+        x_hit = tx * dist_L1 / (-z_src)
+        if abs(x_hit) < x_bar:
+            ax.plot([z_L1], [x_hit], "o", color="darkorange", ms=3.5, zorder=3)
+
+    # Pion tracks (blue dashed, absorbed)
+    for tx, z_stop in [(-15, 18), (8, 42), (22, 25), (-28, 55)]:
+        x_stop = tx * (z_stop - z_src) / (-z_src)
+        ax.plot([z_src, z_stop], [0, x_stop],
+                color="steelblue", lw=1.0, ls="--", alpha=0.75, zorder=1)
+        ax.plot([z_stop], [x_stop], "x",
+                color="steelblue", ms=7, mew=1.8, zorder=3)
+
+    # Acceptance limit lines (dashed purple) — NEW
+    z_ext    = z_L2 + 10
+    x_ext    = x_bar * (z_ext - z_src) / dist_L1
+    ax.plot([z_src, z_ext], [0,  x_ext], color="#8B008B",
+            ls="--", lw=1.3, alpha=0.82, zorder=2)
+    ax.plot([z_src, z_ext], [0, -x_ext], color="#8B008B",
+            ls="--", lw=1.3, alpha=0.82, zorder=2)
+    ax.annotate(rf"$\theta_{{acc}}\approx{theta_acc:.1f}°$",
+                xy=(z_L1 + 2, x_bar + 1.5),
+                fontsize=9, color="#8B008B", va="bottom", ha="left")
+
+    # Source star
+    ax.plot([z_src], [0], "*", color="darkred", ms=13, zorder=5)
+    ax.annotate("Fuente\n(0, 0, −2 m)\n→ dirección +z",
+                xy=(z_src, 0), xytext=(z_src + 25, 28),
+                fontsize=8.5, fontweight="bold", color="darkred", zorder=5,
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                          edgecolor="darkred", alpha=0.92))
+
+    # Dimension arrows
+    y_arr = -x_fe - 7
+    ax.annotate("", xy=(z_fe1, y_arr), xytext=(z_fe0, y_arr),
+                arrowprops=dict(arrowstyle="<->", color="black", lw=1.2))
+    ax.text((z_fe0 + z_fe1) / 2, y_arr - 1.2,
+            "70 cm", ha="center", va="top", fontsize=9)
+    ax.annotate("", xy=(z_L1, y_arr), xytext=(z_fe1, y_arr),
+                arrowprops=dict(arrowstyle="<->", color="black", lw=1.2))
+    ax.text((z_fe1 + z_L1) / 2, y_arr - 1.2,
+            "30 cm", ha="center", va="top", fontsize=9)
+
+    legend_elems = [
+        Line2D([0], [0], marker="*", color="darkred",    linestyle="None", ms=11,
+               label="fuente puntual"),
+        Line2D([0], [0], color="darkorange",             lw=2,
+               label=r"$\mu^+$ (atraviesa el Fe)"),
+        Line2D([0], [0], color="steelblue",              lw=1.5, ls="--",
+               label=r"$\pi^+$ (absorbido en Fe)"),
+        Line2D([0], [0], marker="x", color="steelblue", linestyle="None",
+               ms=7, mew=1.8, label="absorción hadrónica"),
+        Line2D([0], [0], marker="o", color="darkorange", linestyle="None",
+               ms=5, label="impacto en centellador"),
+        Line2D([0], [0], color="#8B008B",                lw=1.5, ls="--",
+               label=rf"límite geom. $\theta_{{acc}}\approx{theta_acc:.1f}°$"),
+    ]
+    ax.legend(handles=legend_elems, fontsize=8.5, loc="upper left", framealpha=0.88)
+    ax.set_xlim(-218, 118)
+    ax.set_ylim(-63, 63)
+    ax.tick_params(labelsize=9)
+
+    # ── Layer panel helper ────────────────────────────────────────────────────
+    def _layer_panel(ax, horizontal_bars, title, xlabel, ylabel,
+                     color, footprint, x_hits, y_hits):
+        ax.set_title(title, fontsize=9, pad=4)
+        ax.set_xlabel(xlabel, fontsize=9)
+        ax.set_ylabel(ylabel, fontsize=9)
+
+        bar_c = np.linspace(-47.5, 47.5, 20)
+        if horizontal_bars:
+            for xc in bar_c:
+                ax.add_patch(Rectangle((xc - 2.5, -50), 5, 100,
+                                       facecolor=color, edgecolor=color,
+                                       alpha=0.18, lw=0.4, zorder=0))
+                ax.axvline(xc + 2.5, color=color, lw=0.3, alpha=0.4)
+        else:
+            for yc in bar_c:
+                ax.add_patch(Rectangle((-50, yc - 2.5), 100, 5,
+                                       facecolor=color, edgecolor=color,
+                                       alpha=0.18, lw=0.4, zorder=0))
+                ax.axhline(yc + 2.5, color=color, lw=0.3, alpha=0.4)
+
+        # Fe face footprint (70×70 cm = ±35 cm, direct projection)
+        ax.add_patch(Rectangle((-35, -35), 70, 70,
+                               facecolor="none", edgecolor="gray",
+                               lw=1.5, ls="-", zorder=2))
+        ax.text(0, 0, "huella del Fe  70×70 cm",
+                ha="center", va="center", fontsize=7.5, color="gray",
+                alpha=0.80, zorder=2)
+
+        # Projected beam footprint (±footprint cm) — NEW
+        ax.add_patch(Rectangle((-footprint, -footprint),
+                               2 * footprint, 2 * footprint,
+                               facecolor="none", edgecolor="darkorange",
+                               lw=1.3, ls="--", zorder=3))
+        ax.text(0, -footprint + 1.8,
+                rf"huella del haz  $\pm${footprint:.1f} cm",
+                ha="center", va="bottom", fontsize=7.5,
+                color="darkorange", alpha=0.92, zorder=3)
+
+        mask = (np.abs(x_hits) < x_bar) & (np.abs(y_hits) < x_bar)
+        ax.scatter(x_hits[mask], y_hits[mask], color="darkorange",
+                   s=10, alpha=0.60, zorder=4,
+                   label="impactos (dist. uniforme\nen cara del Fe)")
+        ax.legend(fontsize=7.5, loc="lower right", framealpha=0.85)
+        ax.set_xlim(-55, 55)
+        ax.set_ylim(-55, 55)
+        ax.set_aspect("equal")
+        ax.tick_params(labelsize=9)
+
+    # ── Capa 1 ────────────────────────────────────────────────────────────────
+    n_dots = 220
+    tx1 = rng.uniform(-x_fe, x_fe, n_dots)
+    ty1 = rng.uniform(-x_fe, x_fe, n_dots)
+    x1  = tx1 * dist_L1 / (-z_src)
+    y1  = ty1 * dist_L1 / (-z_src)
+    _layer_panel(ax_1, horizontal_bars=False,
+                 title="Capa 1 — 20 barras a lo largo de X\n"
+                       r"z = 100.5 cm  →  detecta posición Y",
+                 xlabel="x (cm)  [largo de barra]",
+                 ylabel="y (cm)  [posición medida]",
+                 color="royalblue", footprint=footprint_L1,
+                 x_hits=x1, y_hits=y1)
+
+    # ── Capa 2 ────────────────────────────────────────────────────────────────
+    tx2 = rng.uniform(-x_fe, x_fe, n_dots)
+    ty2 = rng.uniform(-x_fe, x_fe, n_dots)
+    x2  = tx2 * dist_L2 / (-z_src)
+    y2  = ty2 * dist_L2 / (-z_src)
+    _layer_panel(ax_2, horizontal_bars=True,
+                 title="Capa 2 — 20 barras a lo largo de Y\n"
+                       r"z = 103.5 cm  →  detecta posición X",
+                 xlabel="x (cm)  [posición medida]",
+                 ylabel="y (cm)  [largo de barra]",
+                 color="firebrick", footprint=footprint_L2,
+                 x_hits=x2, y_hits=y2)
+
+    # Bottom annotation
+    fig.text(0.5, 0.005,
+             r"Fuente puntual en (0, 0, $-$2 m).  Dirección por evento: apunta a punto uniforme "
+             r"en cara del Fe (70×70 cm)  |  Capa 1 + Capa 2 $\rightarrow$ plano sensible X-Y de 1 m × 1 m",
+             ha="center", va="bottom", fontsize=8.5,
+             bbox=dict(facecolor="lightyellow", edgecolor="gray", alpha=0.85, pad=3))
+
+    _save(fig, out_dir, "detector_layout.png")
+
+
+# ============================================================================
 # PLOT 5: Overlay μ⁺ vs π⁺ — mediana dE/dx vs βγ
 # ============================================================================
 def plot_overlay(mu, pi, out_dir):
@@ -739,6 +979,25 @@ def plot_efficiency_vs_angle(glob_pattern: str, out_dir: str, n_events_per_run: 
     ax.set_xlim(0.0, theta_max + 0.3)
     ax.set_ylim(-0.05, 1.10)
     ax.axhline(0.5, color="gray", ls=":", lw=1, alpha=0.5)
+
+    # Regime boundary lines
+    theta_lateral = np.degrees(np.arctan(35.0 / 270.0))     # ≈7.4°: back-face → lateral-face Fe exit
+    theta_geom    = np.degrees(np.arctan(50.0 * 200.0 / (300.5 * 200.0)))  # ≈9.4°: geometric acceptance cutoff
+    # simpler: theta_geom = arctan(tx_acc / 200) where tx_acc = 50*200/300.5
+    tx_acc_cm     = 50.0 * 200.0 / 300.5
+    theta_geom    = np.degrees(np.arctan(tx_acc_cm / 200.0))
+
+    ax.axvline(theta_lateral, color="goldenrod",  ls=":", lw=1.8, alpha=0.90, zorder=1)
+    ax.axvline(theta_geom,    color="#8B008B",     ls=":", lw=1.8, alpha=0.90, zorder=1)
+    ax.text(theta_lateral + 0.15, 1.04,
+            f"cara lateral\n({theta_lateral:.1f}°)",
+            fontsize=7.5, color="goldenrod", va="top", ha="left",
+            transform=ax.get_xaxis_transform())
+    ax.text(theta_geom + 0.15, 1.04,
+            f"límite geom.\n({theta_geom:.1f}°)",
+            fontsize=7.5, color="#8B008B", va="top", ha="left",
+            transform=ax.get_xaxis_transform())
+
     ax.legend(fontsize=11, framealpha=0.85)
     ax.text(0.03, 0.06,
             r"$\theta$ reconstruido de posiciones de barras" + "\n"
@@ -770,6 +1029,7 @@ def main(mu_path, pi_path, mixed_path, out_dir):
     plot_dedx_vs_beta(mu, pi, out_dir)
     plot_dedx_vs_p(mu, pi, out_dir)
     plot_landau(mu, pi, out_dir)
+    plot_detector_layout(out_dir)
     plot_overlay(mu, pi, out_dir)
     plot_pid_combined(mu, pi, out_dir)
     plot_layer_hits(mu, pi, out_dir)
