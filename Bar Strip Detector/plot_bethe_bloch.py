@@ -437,11 +437,11 @@ def plot_overlay(mu, pi, out_dir):
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel(r"$\beta\gamma = p\,/\,mc$", fontsize=13)
     ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
-    ax.set_title(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=13)
     ax.set_xlim(bg_range); ax.set_ylim(DEDX_MIN, DEDX_MAX)
     ax.legend(fontsize=10, framealpha=0.8)
     _add_info(ax)
-    fig.tight_layout()
+    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=13)
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
     _save(fig, out_dir, "bethe_bloch_overlay.png")
 
 
@@ -505,10 +505,10 @@ def plot_pid_combined(mu, pi, out_dir):
     ax.set_xscale("log")
     ax.set_xlabel(r"$p$  (GeV/c)", fontsize=13)
     ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
-    ax.set_title(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=13)
     ax.set_xlim(p_range_GeV); ax.set_ylim(0, DEDX_LIN_MAX)
     _add_info(ax)
-    fig.tight_layout()
+    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=13)
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
     _save(fig, out_dir, "pid_combined.png")
 
 
@@ -535,9 +535,10 @@ def plot_layer_hits(mu, pi, out_dir):
         for rect, val in zip(bars, [layer0, layer1]):
             ax.text(rect.get_x() + rect.get_width() / 2, rect.get_height() * 1.01,
                     f"{val:,}", ha="center", va="bottom", fontsize=10)
-        ax.set_title(f"Hits por capa — {particle_label}", fontsize=12)
         ax.set_ylabel("Número de hits", fontsize=11)
         ax.set_ylim(0, max(layer0, layer1) * 1.15)
+        ax.text(0.5, 0.97, f"Hits por capa — {particle_label}",
+                transform=ax.transAxes, fontsize=12, ha="center", va="top", fontweight="bold")
         _add_info(ax, particle=particle_label)
 
     fig.tight_layout()
@@ -614,12 +615,11 @@ def plot_efficiency(glob_pattern: str, out_dir: str, n_total: int = 1000):
     ax.axhline(0.5, color="gray", ls=":", lw=1, alpha=0.5)
     ax.set_xlabel(r"$p$  (GeV/c)", fontsize=12)
     ax.set_ylabel(r"$\varepsilon = N_\mathrm{det}\,/\,N_\mathrm{total}$", fontsize=12)
-    ax.set_title(r"$\varepsilon = N_\mathrm{det}\,/\,N_\mathrm{total}$", fontsize=11)
     ax.set_ylim(-0.05, 1.10)
     ax.legend(fontsize=11, framealpha=0.85)
     _add_info(ax)
 
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
     _save(fig, out_dir, "efficiency_vs_momentum.png")
 
 

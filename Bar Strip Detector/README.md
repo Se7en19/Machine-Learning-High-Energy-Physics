@@ -36,7 +36,8 @@ Cubo de G4_Fe, 70 × 70 × 70 cm, centrado en z = 35 cm.
 | Cobertura transversal | 1 m × 1 m |
 | Capa 1 | Barras a lo largo de X, posicionadas en Y, z = 100.5 cm |
 | Capa 2 | Barras a lo largo de Y, posicionadas en X, z = 103.5 cm |
-| Separación entre centros | 3 cm |
+| Separación entre centros (Capa 1 → Capa 2) | 3 cm |
+| Gap libre entre superficies | 2 cm (Capa 1 termina en z=101 cm; Capa 2 empieza en z=103 cm) |
 
 Los centros de barra van de −47.5 cm a +47.5 cm en pasos de 5 cm. No hay gaps entre barras.
 
@@ -48,7 +49,7 @@ Un evento se considera detectado cuando la partícula primaria (TrackID = 1) cum
 
 1. Atraviesa el bloque de hierro sin ser absorbida
 2. Entra en una barra de **Capa 1** y deposita energía (dE/dx registrado)
-3. Sale de Capa 1 y recorre los 3 cm de gap entre capas
+3. Sale de Capa 1 y recorre los 2 cm de gap libre entre capas (distancia entre superficies; la distancia centro a centro es 3 cm)
 4. Entra en una barra de **Capa 2** y deposita energía (dE/dx registrado)
 5. Sale del otro lado del centellador
 
@@ -106,6 +107,23 @@ El comando `/gun/momentumAmp` fija el módulo de **momento** (no energía cinét
 | 11 | layerID | int | 0 = Capa 1, 1 = Capa 2 | — |
 | 12 | barID | int | Número de barra dentro de la capa (0–19) | — |
 | 13 | particleID | int | 0 = μ⁺, 1 = π⁺ | — |
+
+---
+
+## Archivos fuente
+
+Todos los archivos están en `simulation_mixed/`.
+
+| Archivo | Qué define |
+|---|---|
+| `construction.cc / .hh` | Geometría completa: mundo, absorbedor de Fe, posicionamiento de las 40 barras en 2 capas |
+| `detector.cc / .hh` | Detector sensible: registra cada paso de la partícula primaria dentro de cualquier barra y llena el NTuple |
+| `generator.cc / .hh` | Fuente puntual en (0, 0, −2 m), selección 50/50 μ⁺/π⁺ por evento, dirección cónica hacia cara del Fe |
+| `physics.cc / .hh` | Lista de física: G4EmStandardPhysics + FTFP_BERT (hadrónica) + G4OpticalPhysics |
+| `run.cc / .hh` | Apertura del archivo ROOT por run, declaración de las 14 columnas del NTuple, ruta de salida |
+| `action.cc / .hh` | Inicialización de acciones (conecta generator, run y detector) |
+| `sim.cc` | `main()` — inicializa Geant4 y registra los managers |
+| `barrido_continuo.mac` | Macro de Geant4: 80 runs en escala log de 50 MeV/c a 10 GeV/c, 2000 eventos por run |
 
 ---
 
