@@ -1,0 +1,4 @@
+/home/michaela9/Descargas/Machine-Learning-High-Energy-Physics-testing/Bar Strip Detector/simulation_mixed/build/CMakeFiles/sim.dir
+/home/michaela9/Descargas/Machine-Learning-High-Energy-Physics-testing/Bar Strip Detector/simulation_mixed/build/CMakeFiles/Simulation.dir
+/home/michaela9/Descargas/Machine-Learning-High-Energy-Physics-testing/Bar Strip Detector/simulation_mixed/build/CMakeFiles/edit_cache.dir
+/home/michaela9/Descargas/Machine-Learning-High-Energy-Physics-testing/Bar Strip Detector/simulation_mixed/build/CMakeFiles/rebuild_cache.dir
