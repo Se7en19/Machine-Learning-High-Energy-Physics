@@ -1,0 +1,13 @@
+# Geant4 build artifacts
+simulation_mixed/build/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Claude/agent metadata
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
