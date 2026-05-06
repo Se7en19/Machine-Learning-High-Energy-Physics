@@ -87,9 +87,9 @@ void MyDetectorConstruction::ConstructSDandField()
 	if(logicBarraY != nullptr)
 		logicBarraY->SetSensitiveDetector(sensDet);
 
-	// Campo magnético uniforme Bz = 0.5 T (global)
+	// Campo magnético uniforme Bx = 1.0 T (global)
 	G4MagneticField* magField =
-	    new G4UniformMagField(G4ThreeVector(0., 0., 0.5*tesla));
+	    new G4UniformMagField(G4ThreeVector(1.0*tesla, 0., 0.));
 
 	G4FieldManager* fieldMgr =
 	    G4TransportationManager::GetTransportationManager()->GetFieldManager();

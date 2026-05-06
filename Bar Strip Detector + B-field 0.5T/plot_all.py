@@ -95,7 +95,7 @@ plt.rcParams.update({
     "ytick.minor.visible": True,
 })
 
-INFO_STR = r"Geant4  |  Bar Strip Detector  |  70 cm Fe + BC404  |  FTFP\_BERT  |  $B_z = 0.5\,\mathrm{T}$"
+INFO_STR = r"Geant4  |  Bar Strip Detector  |  70 cm Fe + BC404  |  FTFP\_BERT  |  $B_x = 1.0\,\mathrm{T}$"
 
 # ============================================================================
 # Fisica: Bethe-Bloch, Landau MPV, Sternheimer
@@ -410,10 +410,10 @@ def plot_detector_layout(out_dir, seed=42):
 
     fig = plt.figure(figsize=(21, 7))
     fig.suptitle(
-        r"Bar Strip Detector + $B_z = 0.5\ \mathrm{T}$ — Configuración del sistema" + "\n"
+        r"Bar Strip Detector + $B_x = 1.0\ \mathrm{T}$ — Configuración del sistema" + "\n"
         r"Absorbedor: G4\_Fe  70$\times$70$\times$70 cm  |  "
         r"Centellador: BC404  |  "
-        r"Campo magnético: $B_z = 0.5\ \mathrm{T}$ en región vacío (fuente → Fe)",
+        r"Campo magnético: $B_x = 1.0\ \mathrm{T}$ en región vacío (fuente → Fe)",
         fontsize=12, fontweight="bold", y=0.99, va="top")
 
     gs = fig.add_gridspec(1, 3, width_ratios=[3.2, 2, 2],
@@ -461,13 +461,13 @@ def plot_detector_layout(out_dir, seed=42):
             [-x_fe - 4, -x_fe - 4, x_fe + 4, x_fe + 4],
             color="deepskyblue", alpha=0.08, zorder=0)
     ax.text((z_src + z_fe0) / 2, x_fe + 2,
-            r"$\vec{B}_z = 0.5\ \mathrm{T}$",
+            r"$\vec{B}_x = 1.0\ \mathrm{T}$",
             ha="center", va="bottom", fontsize=10,
             color="deepskyblue", fontweight="bold", zorder=4)
 
-    # Flechas de campo magnético (↑ hacia +z, representando Bz) — 4 flechas uniformes
+    # Flechas de campo magnético (→ hacia +x, representando Bx) — 4 flechas uniformes
     for zb in np.linspace(z_src + 30, z_fe0 - 15, 4):
-        ax.annotate("", xy=(zb + 20, 0), xytext=(zb, 0),
+        ax.annotate("", xy=(zb, 18), xytext=(zb, 3),
                     arrowprops=dict(arrowstyle="-|>", color="deepskyblue",
                                     lw=1.5, mutation_scale=12),
                     zorder=4)
@@ -530,7 +530,7 @@ def plot_detector_layout(out_dir, seed=42):
 
     legend_elems = [
         Patch(facecolor="deepskyblue", alpha=0.25,
-              label=r"Región $B_z = 0.5\ \mathrm{T}$"),
+              label=r"Región $B_x = 1.0\ \mathrm{T}$"),
         Line2D([0], [0], marker="*", color="darkred", linestyle="None", ms=11,
                label="fuente puntual"),
         Line2D([0], [0], color="darkorange", lw=2,
@@ -682,7 +682,7 @@ def plot_overlay(mu, pi, out_dir):
     ax.set_xlim(bg_range); ax.set_ylim(DEDX_MIN, DEDX_MAX)
     ax.legend(fontsize=10, **_legend_kwargs())
     _add_info(ax)
-    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=14, fontweight="bold", y=0.96)
+    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=14, fontweight="bold", y=0.93)
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "bethe_bloch_overlay.png")
 
@@ -749,7 +749,7 @@ def plot_pid_combined(mu, pi, out_dir):
     ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
     ax.set_xlim(p_range_GeV); ax.set_ylim(0, DEDX_LIN_MAX)
     _add_info(ax)
-    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=14, fontweight="bold", y=0.96)
+    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=14, fontweight="bold", y=0.93)
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "pid_combined.png")
 
@@ -840,7 +840,7 @@ def plot_landau_corregida(mixed_path, out_dir):
     ax.set_xlim(0.01, 5.0)
     ax.set_ylim(1e-3, 5)
     ax.legend(fontsize=10, loc="upper right", **_legend_kwargs())
-    ax.set_title(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)", fontsize=14, fontweight="bold", pad=10)
+    ax.set_title(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)", fontsize=14, fontweight="bold", pad=16)
     _setup_ax(ax, log_y=True)
 
     stats_text = (
@@ -916,7 +916,7 @@ def plot_eff_momento_corregida(mixed_path, out_dir):
     ax.set_ylabel(r"Eficiencia $\varepsilon$ (%)")
     ax.set_ylim(-3, 105)
     ax.set_xlim(0.04, 11)
-    ax.set_title(r"Eficiencia de detección vs $p_0$", fontsize=14, fontweight="bold", pad=10)
+    ax.set_title(r"Eficiencia de detección vs $p_0$", fontsize=14, fontweight="bold", pad=16)
     _setup_ax(ax)
 
     ax.axvline(0.5, color="gray", ls=":", lw=1.2, alpha=0.6, zorder=0)
@@ -1021,7 +1021,7 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
     ax.set_ylim(-3, 110)
     ax.axhline(50, color="gray", ls=":", lw=1, alpha=0.5)
     ax.legend(fontsize=12, **_legend_kwargs())
-    ax.set_title(r"Eficiencia vs ángulo del cono $\theta$", fontsize=14, fontweight="bold", pad=10)
+    ax.set_title(r"Eficiencia vs ángulo del cono $\theta$", fontsize=14, fontweight="bold", pad=16)
     _setup_ax(ax)
 
     theta_lateral = np.degrees(np.arctan(35.0 / 270.0))
