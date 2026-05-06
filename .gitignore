@@ -1,8 +1,12 @@
 # Carpetas de compilación
 simulation_pi/build/
 simulation_mu/build/
+simulation_mixed/build/
 bin/
 obj/
+
+# Simulación individual de piones (solo referencia local, no se sube al repo)
+Bar Strip Detector/simulation_pi/
 
 # Archivos de salida de ROOT y datos
 *.root
@@ -13,3 +17,13 @@ Classifier/data/**/*.root
 # Archivos temporales de sistema
 .DS_Store
 Thumbs.db
+
+# Carpetas de variantes de simulación — locales, no se suben
+Bar Strip Detector + B-field Sweep/
+Bar Strip Detector + E-field 5MVm/
+Bar Strip Detector + E-field Sweep/
+
+# Archivos de agentes y documentación local
+.scratch/
+AGENTS.md
+docs/
