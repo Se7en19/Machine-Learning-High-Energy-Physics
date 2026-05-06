@@ -1,9 +1,26 @@
+<div align="center">
+
+[![lang-es](https://img.shields.io/badge/lang-ES-red?style=flat-square)](#bar-strip-detector--haz-mixto-μπ)
+[![lang-en](https://img.shields.io/badge/lang-EN-blue?style=flat-square)](#bar-strip-detector--mixed-μπ-beam)
+
+[Geometría](#distribución-del-sistema) ·
+[Fuente](#fuente-de-partículas--haz-cónico) ·
+[NTuple](#columnas-del-ntuple-hits) ·
+[Compilar](#compilación-y-ejecución) ·
+[dE/dx](#dedx-vs-βγ) ·
+[Eficiencia](#eficiencia-de-detección-vs-momento) ·
+[Comparativa](#diferencias-respecto-a-pion-and-muon-simulation)
+
+</div>
+
+---
+
 <details open>
 <summary>🇪🇸 Versión en español</summary>
 
 # Bar Strip Detector — haz mixto μ⁺/π⁺
 
-Simulación Geant4 de un haz mixto μ⁺/π⁺ que atraviesa un absorbedor grueso de hierro y dos capas de barras de centellador plástico. El objetivo es separar muones de piones usando dE/dx, tiempo de vuelo, multiplicidad de hits y posición en las barras, sin necesidad de calorimetría.
+Simulación Geant4 de un haz mixto μ⁺/π⁺ que atraviesa un bloque grueso de hierro y dos capas de barras centelladoras. La idea es separar muones de piones con dE/dx, tiempo de vuelo, multiplicidad de hits y posición en las barras, sin tirar de calorimetría.
 
 ---
 
@@ -155,7 +172,7 @@ Los 80 archivos ROOT se guardan en `Classifier/data/mixed/output_run0.root` … 
 
 ![Detector layout](img/detector_layout.png)
 
-El diagrama muestra la geometría completa: fuente puntual en z = −2 m, cono de partículas hacia la cara del Fe (70×70 cm), absorbedor, gap de 30 cm y las dos capas de centellador. Las líneas moradas discontinuas en la vista lateral delimitan el ángulo de aceptancia geométrica (θ_acc ≈ 9.4°): partículas por encima de ese ángulo llegan más allá de las barras (±50 cm) y no se detectan. En los paneles de cada capa, el rectángulo naranja discontinuo muestra la huella proyectada del haz (±52.6 cm), que supera ligeramente la cobertura del array de barras (±50 cm).
+El diagrama muestra toda la geometría: fuente puntual en z = −2 m, cono de partículas hacia la cara del Fe (70×70 cm), absorbedor, gap de 30 cm y las dos capas de centellador. Las líneas moradas discontinuas en la vista lateral marcan el límite de aceptancia geométrica (θ_acc ≈ 9.4°): por encima de ese ángulo las partículas caen fuera de las barras (±50 cm) y no se detectan. En cada panel de capa, el rectángulo naranja discontinuo es la huella proyectada del haz (±52.6 cm), que se pasa un poco de la cobertura del array (±50 cm).
 
 ---
 
@@ -163,7 +180,7 @@ El diagrama muestra la geometría completa: fuente puntual en z = −2 m, cono d
 
 ![Bethe-Bloch vs bg](img/bethe_bloch_bg.png)
 
-Histograma 2D de dE/dx en función de βγ = p/mc. Ambas especies siguen la curva de Bethe-Bloch teórica (Landau MPV, línea negra). El mínimo ionizante (MIP) aparece alrededor de βγ ≈ 3.5 (≈ 0.17 MeV/mm en BC404). Los π⁺ tienen menos estadística porque ~90% se absorben en el hierro antes de llegar al centellador.
+Histograma 2D de dE/dx en función de βγ = p/mc. Las dos especies siguen la curva teórica de Bethe-Bloch (Landau MPV, línea negra). El mínimo ionizante (MIP) aparece en βγ ≈ 3.5, unos 0.17 MeV/mm en BC404. Los π⁺ tienen menos estadística: ~90 % se absorben en el hierro antes de llegar al centellador.
 
 ---
 
@@ -171,7 +188,7 @@ Histograma 2D de dE/dx en función de βγ = p/mc. Ambas especies siguen la curv
 
 ![dE/dx vs beta](img/dedx_vs_beta.png)
 
-La misma información expresada en términos de velocidad β = v/c. El flanco izquierdo de alta ionización corresponde a partículas lentas (β < 0.5). La curva de Landau MPV teórica coincide bien con la mediana experimental en todo el rango.
+Lo mismo pero en función de la velocidad β = v/c. El flanco izquierdo de alta ionización son las partículas lentas (β < 0.5). La curva teórica de Landau MPV casa bien con la mediana experimental en todo el rango.
 
 ---
 
@@ -179,15 +196,15 @@ La misma información expresada en términos de velocidad β = v/c. El flanco iz
 
 ![dE/dx vs momentum](img/dedx_vs_momentum.png)
 
-dE/dx vs momento en GeV/c (escala log en X). A p < 200 MeV/c μ⁺ y π⁺ se separan porque su diferente masa produce distintas velocidades β al mismo momento. A partir de ~1 GeV/c ambas convergen al plateau MIP.
+dE/dx vs momento en GeV/c (escala log en X). Por debajo de p ≈ 200 MeV/c los μ⁺ y π⁺ se separan porque la diferencia de masa da velocidades β distintas al mismo momento. A partir de ~1 GeV/c las dos especies convergen al plateau MIP.
 
 ---
 
-### Distribución de Landau
+### Distribución de Landau con tabla de estadísticas
 
-![Landau](img/landau_distribution.png)
+![Landau corregida](img/landau_corregida.png)
 
-Distribución de dE/dx por paso en las barras de 1 cm de grosor. La cola asimétrica hacia la derecha es la distribución de Landau, característica de la pérdida de energía en capas delgadas. La cola larga corresponde a electrones delta (δ-rays) que se escapan del volumen activo llevándose parte de la energía.
+Distribución de dE/dx por paso en el run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generados). La tabla insertada compara media, mediana y total de hits para cada especie. La cola asimétrica a la derecha es la firma de Landau: fluctuaciones estadísticas y δ-rays que se escapan del volumen activo de 1 cm. El umbral a 0.5 MeV/mm separa la ionización MIP típica de los pasos con deposición anómala.
 
 ---
 
@@ -195,7 +212,7 @@ Distribución de dE/dx por paso en las barras de 1 cm de grosor. La cola asimét
 
 ![Overlay](img/bethe_bloch_overlay.png)
 
-Mediana de dE/dx vs βγ con banda intercuartílica (percentiles 25–75) para ambas especies. Ambas siguen la misma curva teórica de Landau MPV (línea negra). La banda más estrecha de π⁺ a alto βγ refleja su menor estadística (pocos piones llegan al centellador).
+Mediana de dE/dx vs βγ con banda intercuartílica (percentiles 25–75) para ambas especies. Las dos siguen la misma curva teórica de Landau MPV (línea negra). La banda de π⁺ es más estrecha a alto βγ porque llegan menos piones al centellador.
 
 ---
 
@@ -203,7 +220,7 @@ Mediana de dE/dx vs βγ con banda intercuartílica (percentiles 25–75) para a
 
 ![PID combinado](img/pid_combined.png)
 
-μ⁺ y π⁺ superpuestos en el plano dE/dx vs p. La señal azul (μ⁺) es mucho más densa que la roja (π⁺) — la absorción hadrónica reduce los piones detectables a ~10% del total. Las curvas de Landau MPV teórica (líneas sólidas) coinciden con las medianas observadas.
+μ⁺ y π⁺ superpuestos en el plano dE/dx vs p. La señal azul (μ⁺) es bastante más densa que la roja (π⁺): la absorción hadrónica deja solo ~10 % de piones detectables. Las curvas de Landau MPV teórica (líneas sólidas) casan con las medianas observadas.
 
 ---
 
@@ -211,47 +228,51 @@ Mediana de dE/dx vs βγ con banda intercuartílica (percentiles 25–75) para a
 
 ![Layer hits](img/layer_hits.png)
 
-Número de hits en Capa 1 vs Capa 2 para cada especie. Los μ⁺ muestran ~2% de asimetría entre capas (esperable para trazas casi rectas). Los π⁺ muestran ~12% de asimetría: algunos piones se dispersan hadrónicamene entre capas o pierden suficiente energía en el gap de 2 cm como para no llegar a Capa 2.
+Número de hits en Capa 1 vs Capa 2 para cada especie. Los μ⁺ muestran ~2 % de asimetría entre capas, esperable para trazas casi rectas. Los π⁺ tienen ~12 %: algunos piones se dispersan hadrónicamente entre capas o pierden suficiente energía en el gap de 2 cm y no llegan a Capa 2.
 
 ---
 
 ### Eficiencia de detección vs momento
 
-![Eficiencia vs p](img/efficiency_vs_momentum.png)
+![Eficiencia corregida vs p₀](img/eff_momento_corregida.png)
 
-**μ⁺:** ε sube de 0 a ≈ 87–90% entre 500–700 MeV/c. Ese rango corresponde al umbral de rango en 70 cm de hierro; por debajo, el muón se detiene antes de salir del absorbedor.
+El eje X es el momento inicial p₀ del barrido logarítmico (50 MeV/c a 10 GeV/c, 80 puntos), no el momento que mide el centellador. Si usas el momento detectado después del Fe salen picos artificiales, porque la pérdida de energía y la dispersión múltiple en el hierro distorsionan la distribución original.
 
-**π⁺:** ε se mantiene plana entre 5–10% en todo el rango de momenta. La probabilidad de supervivencia hadrónica (exp(−4.17) ≈ 1.5% pura) no depende del momento; el ~10% observado es mayor porque incluye piones que sufrieron dispersión hadrónica elástica y continuaron como traza primaria (TrackID = 1).
+μ⁺ sube de 0 a ≈ 89 % entre 500 y 700 MeV/c. Ese rango coincide con el umbral de rango en 70 cm de hierro: por debajo el muón se queda dentro, por encima lo atraviesa. Se ven tres regímenes:
+
+- Régimen I (p₀ < 500 MeV/c): el muón no penetra los 70 cm de Fe.
+- Régimen II (500–700 MeV/c): transición sigmoidal, el rango del muón cruza justo el espesor del absorbedor.
+- Régimen III (p₀ > 700 MeV/c): meseta al ~89 ± 1 %, todos penetran.
+
+π⁺ se mantiene plano al 5–10 % en todo el rango. La probabilidad de supervivencia hadrónica no depende del momento; el ~10 % observado incluye piones que sufrieron dispersión elástica y mantuvieron TrackID = 1. Las barras de error son binomiales: σ_ε = √[ε(1 − ε) / 1000].
 
 ---
 
 ### Eficiencia vs ángulo del cono
 
-![Eficiencia vs ángulo](img/efficiency_vs_angle.png)
+![Eficiencia corregida vs θ](img/eff_angulo_corregida.png)
 
-ε en función del ángulo del cono θ, reconstruido de las posiciones centrales de las barras tocadas. El paso de barra de 5 cm limita la resolución angular a ~0.7° por coordenada; de ahí que el plot muestre ~14 puntos discretos y no una curva. Ángulo máximo del cono: arctan(35√2 cm / 200 cm) ≈ 13.9°.
+θ viene directo de la columna `ConeAngle` del NTuple de Geant4: el ángulo entre `GetVertexMomentumDirection()` y el eje z en el punto de origen (z = −2 m), antes de que la partícula toque el hierro. Si reconstruyes θ desde las posiciones centrales de las barras solo obtienes ~14 valores discretos (paso de 5 cm, ~0.7° por coordenada) y la curva sale con oscilaciones. Con ConeAngle la distribución es continua y la eficiencia se ve suave.
 
-El camino dentro del cubo de Fe (70×70×70 cm) depende de por qué cara salga la partícula:
+Dos líneas verticales marcan cortes geométricos:
 
-- θ < 7.4°: sale por la cara trasera, recorre 70/cosθ cm — apenas más que en incidencia normal.
-- 7.4° < θ < 9.4°: sale por una cara lateral. El camino cae rápido: solo ~34 cm a θ ≈ 8.5°. Más oblicua no es más hierro.
-- θ > 9.4°: la partícula llega a |x| o |y| > 50 cm, fuera del alcance de las barras. La eficiencia se va a cero por aceptancia geométrica, no por blindaje adicional.
+- θ_lateral ≈ 7.4°: la partícula sale por una cara lateral del cubo de Fe. El camino en hierro cae en picado, solo ~34 cm a θ ≈ 8.5°, así que muones que antes se habrían detenido ahora atraviesan.
+- θ_geom ≈ 9.4°: límite geométrico del array de barras (±50 cm). Más allá la partícula cae fuera de cobertura y la eficiencia se va a cero.
 
-μ⁺: ε plana hasta ~9°, luego corte abrupto donde acaba la cobertura del centellador.
-π⁺: el mismo corte geométrico a ~9°; el nivel base del ~10% lo pone la absorción hadrónica, sin dependencia angular.
+μ⁺ plana hasta ~9° y luego corte seco por aceptancia geométrica. π⁺ con el mismo corte a ~9°; el piso del ~10 % lo pone la absorción hadrónica, que no depende del ángulo. Barras de error binomial incluidas.
 
 ---
 
-## Gráficas con `plot_bethe_bloch.py`
+## Gráficas con `plot_all.py`
 
 ```bash
 cd "Bar Strip Detector"
-python plot_bethe_bloch.py \
+python plot_all.py \
     --mixed "../Classifier/data/mixed/output_run*.root" \
     --out   img/
 ```
 
-Genera 9 plots en `img/`. Para el ángulo del cono con mayor precisión, recompila y re-corre la simulación con la columna `ConeAngle` (columna 14, ya añadida a `detector.cc` y `run.cc`).
+Genera 10 plots en `img/`. El script unificado lee la columna `ConeAngle` (columna 14) para las gráficas de eficiencia angular y usa el momento inicial p₀ del barrido logarítmico para la eficiencia vs momento.
 
 ---
 
@@ -284,7 +305,7 @@ pip install numpy matplotlib uproot
 
 # Bar Strip Detector — mixed μ⁺/π⁺ beam
 
-Geant4 simulation of a mixed μ⁺/π⁺ beam passing through a thick iron absorber and two plastic scintillator bar layers. Goal: separate muons from pions using dE/dx, time of flight, hit multiplicity, and bar position — no calorimetry needed.
+Geant4 simulation of a mixed μ⁺/π⁺ beam through a thick iron block and two scintillator bar layers. The idea is to separate muons from pions with dE/dx, time of flight, hit multiplicity and bar position — no calorimetry needed.
 
 ---
 
@@ -436,7 +457,7 @@ The 80 ROOT files are written to `Classifier/data/mixed/output_run0.root` … `o
 
 ![Detector layout](img/detector_layout.png)
 
-The diagram shows the full geometry: point source at z = −2 m, cone toward the Fe face (70×70 cm), absorber, 30 cm gap, and the two scintillator layers. The purple dashed lines in the side view mark the geometric acceptance limit (θ_acc ≈ 9.4°): particles above that angle arrive beyond the bar array (±50 cm) and are not detected. In each layer panel, the orange dashed rectangle shows the projected beam footprint (±52.6 cm), which slightly overflows the bar coverage (±50 cm).
+The diagram shows the full geometry: point source at z = −2 m, cone toward the Fe face (70×70 cm), absorber, 30 cm gap, and the two scintillator layers. The purple dashed lines in the side view mark the geometric acceptance limit (θ_acc ≈ 9.4°): particles above that angle land beyond the bar array (±50 cm) and are not detected. In each layer panel, the orange dashed rectangle is the projected beam footprint (±52.6 cm), which slightly overflows the bar coverage (±50 cm).
 
 ---
 
@@ -444,7 +465,7 @@ The diagram shows the full geometry: point source at z = −2 m, cone toward the
 
 ![Bethe-Bloch vs bg](img/bethe_bloch_bg.png)
 
-2D histogram of dE/dx as a function of βγ = p/mc. Both species follow the theoretical Bethe-Bloch curve (Landau MPV, black line). The minimum ionising particle (MIP) appears around βγ ≈ 3.5 (≈ 0.17 MeV/mm in BC404). π⁺ statistics are sparse because ~90% are absorbed in iron before reaching the scintillator.
+2D histogram of dE/dx vs βγ = p/mc. Both species follow the theoretical Bethe-Bloch curve (Landau MPV, black line). The minimum ionising point sits around βγ ≈ 3.5, about 0.17 MeV/mm in BC404. π⁺ statistics are thin because ~90 % get absorbed in iron before reaching the scintillator.
 
 ---
 
@@ -452,7 +473,7 @@ The diagram shows the full geometry: point source at z = −2 m, cone toward the
 
 ![dE/dx vs beta](img/dedx_vs_beta.png)
 
-Same information expressed in terms of velocity β = v/c. The high-ionisation left edge corresponds to slow particles (β < 0.5). The theoretical Landau MPV curve matches the experimental median well across the full range.
+Same data in terms of velocity β = v/c. The high-ionisation left edge is where slow particles sit (β < 0.5). The theoretical Landau MPV curve tracks the experimental median well across the full range.
 
 ---
 
@@ -460,15 +481,15 @@ Same information expressed in terms of velocity β = v/c. The high-ionisation le
 
 ![dE/dx vs momentum](img/dedx_vs_momentum.png)
 
-dE/dx vs momentum in GeV/c (log X axis). Below p ≈ 200 MeV/c, μ⁺ and π⁺ separate because their different masses produce different β at the same momentum. Above ~1 GeV/c both converge to the MIP plateau.
+dE/dx vs momentum in GeV/c (log X axis). Below p ≈ 200 MeV/c the μ⁺ and π⁺ separate because their different masses give different β at the same momentum. Above ~1 GeV/c both converge to the MIP plateau.
 
 ---
 
-### Landau distribution
+### Landau distribution with statistics table
 
-![Landau](img/landau_distribution.png)
+![Landau corrected](img/landau_corregida.png)
 
-dE/dx distribution per step in the 1 cm thick bars. The asymmetric right tail is the Landau distribution, typical of energy loss in thin layers. The long tail comes from high-energy delta electrons (δ-rays) that escape the active volume carrying part of the energy.
+dE/dx per step in run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generated). The inset table compares mean, median and total hit count for each species. The asymmetric right tail is the Landau signature: statistical fluctuations and δ-rays escaping the 1 cm active volume. The 0.5 MeV/mm threshold separates typical MIP ionisation from anomalous energy-deposition steps.
 
 ---
 
@@ -476,7 +497,7 @@ dE/dx distribution per step in the 1 cm thick bars. The asymmetric right tail is
 
 ![Overlay](img/bethe_bloch_overlay.png)
 
-Median dE/dx vs βγ with the interquartile range (25th–75th percentile) for both species. Both track the same theoretical Landau MPV curve (black dashed). The narrower π⁺ band at high βγ reflects the smaller sample.
+Median dE/dx vs βγ with the interquartile range (25th–75th percentile) for both species. Both follow the same theoretical Landau MPV curve (black line). The π⁺ band is narrower at high βγ because fewer pions make it to the scintillator.
 
 ---
 
@@ -484,7 +505,7 @@ Median dE/dx vs βγ with the interquartile range (25th–75th percentile) for b
 
 ![PID](img/pid_combined.png)
 
-μ⁺ and π⁺ overlaid in the dE/dx vs p plane. The blue signal (μ⁺) is far denser than the red (π⁺) — hadronic absorption reduces the detectable pion fraction to ~10%. The theoretical Landau MPV curves (solid lines) match the observed medians.
+μ⁺ and π⁺ overlaid in the dE/dx vs p plane. The blue signal (μ⁺) is much denser than the red (π⁺) — hadronic absorption knocks the detectable pion fraction down to ~10 %. The theoretical Landau MPV curves (solid lines) line up with the observed medians.
 
 ---
 
@@ -492,34 +513,38 @@ Median dE/dx vs βγ with the interquartile range (25th–75th percentile) for b
 
 ![Layer hits](img/layer_hits.png)
 
-Hit count in Layer 1 vs Layer 2 for each species. μ⁺ show ~2% asymmetry between layers (expected for nearly straight tracks). π⁺ show ~12%: some pions scatter hadronically between layers or lose enough energy in the 2 cm gap to stop before Layer 2.
+Hit count in Layer 1 vs Layer 2 for each species. μ⁺ show ~2 % asymmetry between layers, which is expected for nearly straight tracks. π⁺ have ~12 %: some pions scatter hadronically between layers or lose enough energy in the 2 cm gap to stop before Layer 2.
 
 ---
 
 ### Detection efficiency vs momentum
 
-![Efficiency vs p](img/efficiency_vs_momentum.png)
+![Corrected efficiency vs p₀](img/eff_momento_corregida.png)
 
-**μ⁺:** ε rises from 0 to ≈ 87–90% between 500–700 MeV/c. That momentum range corresponds to the range threshold in 70 cm of iron — below it, the muon stops inside the absorber.
+The X axis is the initial momentum p₀ from the logarithmic sweep (50 MeV/c to 10 GeV/c, 80 points), not the momentum measured in the scintillator. If you use the detected momentum after the Fe you get artificial peaks, because energy loss and multiple scattering in the iron distort the original distribution.
 
-**π⁺:** ε stays flat at 5–10% across all momenta. The hadronic survival probability (exp(−4.17) ≈ 1.5% pure, observed ≈ 10% due to elastic hadronic scattering preserving TrackID = 1) does not depend appreciably on momentum.
+μ⁺ rises from 0 to ≈ 89 % between 500 and 700 MeV/c. That range matches the range threshold in 70 cm of iron: below it the muon stops inside, above it punches through. Three regimes show up clearly:
+
+- Regime I (p₀ < 500 MeV/c): muon does not penetrate 70 cm of Fe.
+- Regime II (500–700 MeV/c): sigmoidal transition, the muon range crosses the absorber thickness.
+- Regime III (p₀ > 700 MeV/c): plateau at ~89 ± 1 %, all muons penetrate.
+
+π⁺ stays flat at 5–10 % across the full range. Hadronic survival probability does not depend on momentum; the ~10 % observed includes pions that underwent elastic scattering and kept TrackID = 1. Error bars are binomial: σ_ε = √[ε(1 − ε) / 1000].
 
 ---
 
 ### Efficiency vs cone angle
 
-![Efficiency vs angle](img/efficiency_vs_angle.png)
+![Corrected efficiency vs θ](img/eff_angulo_corregida.png)
 
-ε as a function of cone angle θ, reconstructed from hit bar center positions. The 5 cm bar pitch gives ~0.7° angular resolution per coordinate, which is why the plot shows ~14 discrete points rather than a continuous curve. Maximum cone angle: arctan(35√2 cm / 200 cm) ≈ 13.9°.
+θ comes straight from the `ConeAngle` column of the Geant4 NTuple: the angle between `GetVertexMomentumDirection()` and the z-axis at the origin (z = −2 m), before the particle hits any iron. If you reconstruct θ from bar hit positions you only get ~14 discrete values (5 cm pitch, ~0.7° per coordinate) and the curve comes out with oscillations. With ConeAngle the angular distribution is continuous and the efficiency looks smooth.
 
-The path through the Fe cube (70×70×70 cm) depends on which face the particle exits from:
+Two vertical lines mark geometric cutoffs:
 
-- θ < 7.4°: back face exit, path = 70/cosθ cm — barely longer than straight through.
-- 7.4° < θ < 9.4°: lateral face exit, path drops fast — only ~34 cm at θ ≈ 8.5°. More oblique is not more iron.
-- θ > 9.4°: particle arrives at |x| or |y| > 50 cm, past the bar coverage. Efficiency collapses from geometric acceptance loss, not extra shielding.
+- θ_lateral ≈ 7.4°: particle exits through a lateral face of the Fe cube. The path in iron drops fast, only ~34 cm at θ ≈ 8.5°, so muons that would have stopped now punch through.
+- θ_geom ≈ 9.4°: geometric limit of the bar array (±50 cm). Beyond this the particle lands outside coverage and efficiency drops to zero.
 
-μ⁺: ε flat up to ~9°, then a sharp cutoff where the scintillator coverage ends.
-π⁺: same geometric cutoff at ~9°; the ~10% floor is set by hadronic absorption, which has no angular dependence.
+μ⁺ flat up to ~9° then a sharp cutoff from geometric acceptance. π⁺ with the same cutoff at ~9°; the ~10 % floor is set by hadronic absorption, which has no angular dependence. Binomial error bars included.
 
 ---
 
@@ -527,12 +552,12 @@ The path through the Fe cube (70×70×70 cm) depends on which face the particle 
 
 ```bash
 cd "Bar Strip Detector"
-python plot_bethe_bloch.py \
+python plot_all.py \
     --mixed "../Classifier/data/mixed/output_run*.root" \
     --out   img/
 ```
 
-Generates 9 plots in `img/`. For more accurate cone angles, recompile and re-run the simulation with the `ConeAngle` column (column 14, already added to `detector.cc` and `run.cc`).
+Generates 10 plots in `img/`. The unified script reads the `ConeAngle` column (column 14) for angular efficiency plots and uses the initial momentum p₀ from the logarithmic sweep for efficiency vs momentum.
 
 ---
 
