@@ -56,16 +56,43 @@ K   = 0.307075        # MeV*cm^2/mol
 
 DEDX_MIN = 0.01       # MeV/mm
 DEDX_MAX = 5.0        # MeV/mm
-CMAP = "jet"
+CMAP = "viridis"
+
+# Color palette — tableau-inspired, colorblind-safe
+COLOR_MU = "#4C72B0"   # blue for mu+
+COLOR_PI = "#DD8452"   # warm orange for pi+
+COLOR_MU_LIGHT = "#4C72B0"
+COLOR_PI_LIGHT = "#DD8452"
 
 # Sternheimer density-effect correction for BC404
 _STERN_BC404 = dict(C=-3.7936, x0=0.1496, x1=2.4815, a=0.15018, m=3.4083, d0=0.00)
 
+# HEP paper-style rcParams (serif, CM math, inward ticks, subtle grid)
 plt.rcParams.update({
-    "font.size": 12, "axes.titlesize": 13, "axes.labelsize": 12,
-    "xtick.labelsize": 10, "ytick.labelsize": 10, "legend.fontsize": 10,
-    "figure.dpi": 150, "axes.facecolor": "white", "figure.facecolor": "white",
-    "axes.grid": False,
+    "font.family": "serif",
+    "font.serif": ["DejaVu Serif", "Times New Roman", "Liberation Serif"],
+    "mathtext.fontset": "cm",
+    "font.size": 11,
+    "axes.titlesize": 14,
+    "axes.titleweight": "bold",
+    "axes.labelsize": 12,
+    "xtick.labelsize": 11,
+    "ytick.labelsize": 11,
+    "legend.fontsize": 10,
+    "figure.dpi": 200,
+    "savefig.dpi": 200,
+    "axes.facecolor": "white",
+    "figure.facecolor": "white",
+    "axes.grid": True,
+    "grid.alpha": 0.25,
+    "grid.linestyle": "--",
+    "grid.linewidth": 0.7,
+    "xtick.direction": "in",
+    "ytick.direction": "in",
+    "xtick.top": True,
+    "ytick.right": True,
+    "xtick.minor.visible": True,
+    "ytick.minor.visible": True,
 })
 
 INFO_STR = r"Geant4  |  Bar Strip Detector  |  70 cm Fe + BC404  |  FTFP\_BERT"
@@ -153,6 +180,30 @@ def _bethe_line(ax, bg_range, mass, color="black", lw=2, label="Landau MPV (BB)"
     ax.plot(bg_th[v], mpv[v], color=color, lw=lw, ls="-", label=label, zorder=5)
 
 
+def _setup_ax(ax, log_x=False, log_y=False):
+    """Apply consistent HEP-style formatting to an axis."""
+    ax.minorticks_on()
+    ax.tick_params(which="both", direction="in", top=True, right=True)
+    if log_x:
+        ax.set_xscale("log")
+    if log_y:
+        ax.set_yscale("log")
+
+
+def _legend_kwargs(**overrides):
+    """Default legend kwargs with HEP styling."""
+    kw = dict(framealpha=0.9, edgecolor="lightgray", fancybox=True)
+    kw.update(overrides)
+    return kw
+
+
+def _info_box_kwargs(**overrides):
+    """Default info/annotation box kwargs."""
+    kw = dict(boxstyle="round,pad=0.4", facecolor="white", edgecolor="#CCCCCC", alpha=0.8)
+    kw.update(overrides)
+    return kw
+
+
 # ============================================================================
 # Data loading
 # ============================================================================
@@ -218,8 +269,10 @@ def plot_dedx_vs_bg(mu, pi, out_dir):
                       bins=[200, 200],
                       range=[list(bg_range), [DEDX_MIN, DEDX_MAX]],
                       norm=norm, cmap=CMAP)
-        cb = plt.colorbar(h[3], ax=ax)
+        cb = plt.colorbar(h[3], ax=ax, shrink=0.82, aspect=14)
         cb.set_label("Counts", fontsize=10)
+        cb.ax.minorticks_on()
+        cb.ax.tick_params(direction="in")
 
         _bethe_line(ax, bg_range, mass)
 
@@ -228,12 +281,12 @@ def plot_dedx_vs_bg(mu, pi, out_dir):
         ax.text(bg_mip * 1.06, DEDX_MIN * 1.5, "MIP",
                 color="goldenrod", fontsize=9, va="bottom")
 
-        ax.set_xscale("log"); ax.set_yscale("log")
+        _setup_ax(ax, log_x=True, log_y=True)
         ax.set_xlabel(r"$\beta\gamma = p\,/\,mc$", fontsize=12)
         if ax is axes[0]:
             ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=12)
         ax.set_xlim(bg_range); ax.set_ylim(DEDX_MIN, DEDX_MAX)
-        ax.legend(loc="upper right", fontsize=9, framealpha=0.7)
+        ax.legend(loc="upper right", fontsize=9, **_legend_kwargs())
         _add_info(ax, particle=particle_label)
 
     fig.tight_layout()
@@ -258,8 +311,10 @@ def plot_dedx_vs_beta(mu, pi, out_dir):
                       bins=[200, 200],
                       range=[list(beta_range), [DEDX_MIN, DEDX_MAX]],
                       norm=norm, cmap=CMAP)
-        cb = plt.colorbar(h[3], ax=ax)
+        cb = plt.colorbar(h[3], ax=ax, shrink=0.82, aspect=14)
         cb.set_label("Counts", fontsize=10)
+        cb.ax.minorticks_on()
+        cb.ax.tick_params(direction="in")
 
         beta_th = np.linspace(beta_range[0], 0.9999, 2000)
         bg_th = beta_th / np.sqrt(1.0 - beta_th**2)
@@ -267,12 +322,12 @@ def plot_dedx_vs_beta(mu, pi, out_dir):
         v = ~np.isnan(mpv)
         ax.plot(beta_th[v], mpv[v], color="black", lw=2, ls="-", label="Landau MPV (BB)")
 
-        ax.set_yscale("log")
+        _setup_ax(ax, log_y=True)
         ax.set_xlabel(r"$\beta = v/c$", fontsize=12)
         if ax is axes[0]:
             ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=12)
         ax.set_xlim(beta_range); ax.set_ylim(DEDX_MIN, DEDX_MAX)
-        ax.legend(loc="upper right", fontsize=9, framealpha=0.7)
+        ax.legend(loc="upper right", fontsize=9, **_legend_kwargs())
         _add_info(ax, particle=particle_label)
 
     fig.tight_layout()
@@ -300,8 +355,10 @@ def plot_dedx_vs_p(mu, pi, out_dir):
 
         h = ax.hist2d(p_GeV, data["fdEdx"],
                       bins=[p_bins, dedx_bins], norm=norm, cmap=CMAP)
-        cb = plt.colorbar(h[3], ax=ax)
+        cb = plt.colorbar(h[3], ax=ax, shrink=0.82, aspect=14)
         cb.set_label("Counts", fontsize=10)
+        cb.ax.minorticks_on()
+        cb.ax.tick_params(direction="in")
 
         p_th_GeV = np.logspace(np.log10(p_range_GeV[0]), np.log10(p_range_GeV[1]), 2000)
         bg_th = (p_th_GeV * 1000) / mass
@@ -313,12 +370,12 @@ def plot_dedx_vs_p(mu, pi, out_dir):
         ax.axvline(p_mip_GeV, color="gold", ls="--", lw=1.5, alpha=0.9)
         ax.text(p_mip_GeV * 1.1, 0.05, "MIP", color="goldenrod", fontsize=9, va="bottom")
 
-        ax.set_xscale("log")
+        _setup_ax(ax, log_x=True)
         ax.set_xlabel(r"$p$  (GeV/c)", fontsize=12)
         if ax is axes[0]:
             ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=12)
         ax.set_xlim(p_range_GeV); ax.set_ylim(0, DEDX_LIN_MAX)
-        ax.legend(loc="upper right", fontsize=9, framealpha=0.7)
+        ax.legend(loc="upper right", fontsize=9, **_legend_kwargs())
         _add_info(ax, particle=particle_label)
 
     fig.tight_layout()
@@ -356,10 +413,10 @@ def plot_detector_layout(out_dir, seed=42):
         r"Bar Strip Detector — Configuración del sistema" + "\n"
         r"Absorbedor: G4\_Fe  70$\times$70$\times$70 cm  |  "
         r"Centellador: G4\_PLASTIC\_SC\_VINYLTOLUENE (BC404, $\rho$=1.032 g/cm$^3$)",
-        fontsize=11, y=0.99, va="top")
+        fontsize=12, fontweight="bold", y=0.99, va="top")
 
     gs = fig.add_gridspec(1, 3, width_ratios=[3.2, 2, 2],
-                          wspace=0.28, left=0.04, right=0.98,
+                          wspace=0.22, left=0.04, right=0.98,
                           top=0.87, bottom=0.12)
     ax_s = fig.add_subplot(gs[0])
     ax_1 = fig.add_subplot(gs[1])
@@ -442,8 +499,7 @@ def plot_detector_layout(out_dir, seed=42):
                 xy=(z_src, 0), xytext=(z_src - 8, -40),
                 fontsize=8.5, fontweight="bold", color="darkred", zorder=5,
                 arrowprops=dict(arrowstyle="->", color="darkred", lw=1.2),
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
-                          edgecolor="darkred", alpha=0.92))
+                bbox=_info_box_kwargs(edgecolor="darkred", alpha=0.92))
 
     y_arr = -x_fe - 7
     ax.annotate("", xy=(z_fe1, y_arr), xytext=(z_fe0, y_arr),
@@ -473,7 +529,7 @@ def plot_detector_layout(out_dir, seed=42):
         Line2D([0], [0], color="goldenrod", lw=1.5, ls="--",
                label=rf"cara lateral $\theta_{{lat}}\approx{theta_lat:.1f}°$"),
     ]
-    ax.legend(handles=legend_elems, fontsize=8.5, loc="upper left", framealpha=0.88)
+    ax.legend(handles=legend_elems, fontsize=8.5, loc="upper left", **_legend_kwargs(framealpha=0.88))
     ax.set_xlim(-218, 118)
     ax.set_ylim(-63, 63)
     ax.tick_params(labelsize=9)
@@ -512,13 +568,14 @@ def plot_detector_layout(out_dir, seed=42):
         ax.text(-footprint + 2, -footprint + 1.8,
                 rf"huella del haz  $\pm${footprint:.1f} cm",
                 ha="left", va="bottom", fontsize=7.5,
-                color="darkorange", alpha=0.92, zorder=3)
+                color="darkorange", alpha=0.92, zorder=3,
+                bbox=_info_box_kwargs(alpha=0.7, edgecolor="darkorange"))
 
         mask = (np.abs(x_hits) < x_bar) & (np.abs(y_hits) < x_bar)
         ax.scatter(x_hits[mask], y_hits[mask], color="darkorange",
                    s=10, alpha=0.60, zorder=4,
                    label="impactos (dist. uniforme\nen cara del Fe)")
-        ax.legend(fontsize=7.5, loc="lower right", framealpha=0.85)
+        ax.legend(fontsize=7.5, loc="lower right", **_legend_kwargs(framealpha=0.85))
         ax.set_xlim(-55, 55)
         ax.set_ylim(-55, 55)
         ax.set_aspect("equal")
@@ -553,7 +610,7 @@ def plot_detector_layout(out_dir, seed=42):
              r"Fuente puntual en (0, 0, $-$2 m).  Dirección por evento: apunta a punto uniforme "
              r"en cara del Fe (70×70 cm)  |  Capa 1 + Capa 2 $\rightarrow$ plano sensible X-Y de 1 m × 1 m",
              ha="center", va="bottom", fontsize=8.5,
-             bbox=dict(facecolor="lightyellow", edgecolor="gray", alpha=0.85, pad=3))
+             bbox=_info_box_kwargs(facecolor="lightyellow", edgecolor="gray", alpha=0.85, pad=3))
 
     _save(fig, out_dir, "detector_layout.png")
 
@@ -586,10 +643,10 @@ def plot_overlay(mu, pi, out_dir):
 
     v_mu = ~np.isnan(mu_med)
     v_pi = ~np.isnan(pi_med)
-    ax.fill_between(bg_centers[v_mu], mu_lo[v_mu], mu_hi[v_mu], color="steelblue", alpha=0.25)
-    ax.fill_between(bg_centers[v_pi], pi_lo[v_pi], pi_hi[v_pi], color="tomato", alpha=0.25)
-    ax.plot(bg_centers[v_mu], mu_med[v_mu], color="steelblue", lw=2, label=r"$\mu^+$  mediana dE/dx")
-    ax.plot(bg_centers[v_pi], pi_med[v_pi], color="tomato", lw=2, label=r"$\pi^+$  mediana dE/dx")
+    ax.fill_between(bg_centers[v_mu], mu_lo[v_mu], mu_hi[v_mu], color=COLOR_MU, alpha=0.15)
+    ax.fill_between(bg_centers[v_pi], pi_lo[v_pi], pi_hi[v_pi], color=COLOR_PI, alpha=0.15)
+    ax.plot(bg_centers[v_mu], mu_med[v_mu], color=COLOR_MU, lw=2.5, label=r"$\mu^+$  mediana dE/dx")
+    ax.plot(bg_centers[v_pi], pi_med[v_pi], color=COLOR_PI, lw=2.5, label=r"$\pi^+$  mediana dE/dx")
 
     bg_th = np.logspace(np.log10(bg_range[0]), np.log10(bg_range[1]), 2000)
     mpv = landau_mpv(bg_th, x_mm=10.0, mat=AIR)
@@ -600,13 +657,13 @@ def plot_overlay(mu, pi, out_dir):
     ax.axvline(3.5, color="gray", ls=":", lw=1.5, alpha=0.6)
     ax.text(3.5 * 1.05, DEDX_MIN * 1.3, "MIP\n(βγ≈3.5)", color="gray", fontsize=9, va="bottom")
 
-    ax.set_xscale("log"); ax.set_yscale("log")
+    _setup_ax(ax, log_x=True, log_y=True)
     ax.set_xlabel(r"$\beta\gamma = p\,/\,mc$", fontsize=13)
     ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
     ax.set_xlim(bg_range); ax.set_ylim(DEDX_MIN, DEDX_MAX)
-    ax.legend(fontsize=10, framealpha=0.8)
+    ax.legend(fontsize=10, **_legend_kwargs())
     _add_info(ax)
-    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=13, y=0.96)
+    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=14, fontweight="bold", y=0.96)
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "bethe_bloch_overlay.png")
 
@@ -647,33 +704,33 @@ def plot_pid_combined(mu, pi, out_dir):
 
     p_th_GeV = np.logspace(np.log10(p_range_GeV[0]), np.log10(p_range_GeV[1]), 2000)
     for mass, color, label in [
-        (M_MU, "royalblue", r"Landau MPV — $\mu^+$"),
-        (M_PI, "firebrick", r"Landau MPV — $\pi^+$"),
+        (M_MU, COLOR_MU, r"Landau MPV — $\mu^+$"),
+        (M_PI, COLOR_PI, r"Landau MPV — $\pi^+$"),
     ]:
         bg_th = (p_th_GeV * 1000) / mass
         mpv = landau_mpv(bg_th, x_mm=10.0)
         v = ~np.isnan(mpv) & (mpv < DEDX_LIN_MAX)
-        ax.plot(p_th_GeV[v], mpv[v], color=color, lw=2, ls="-", label=label, zorder=5)
+        ax.plot(p_th_GeV[v], mpv[v], color=color, lw=2.5, ls="-", label=label, zorder=5)
 
     from matplotlib.patches import Patch
     legend_handles = [
         Patch(facecolor="steelblue", alpha=0.8, label=r"$\mu^+$ datos"),
         Patch(facecolor="tomato", alpha=0.8, label=r"$\pi^+$ datos"),
-        plt.Line2D([0], [0], color="royalblue", lw=2, label=r"Landau MPV — $\mu^+$"),
-        plt.Line2D([0], [0], color="firebrick", lw=2, label=r"Landau MPV — $\pi^+$"),
+        plt.Line2D([0], [0], color=COLOR_MU, lw=2.5, label=r"Landau MPV — $\mu^+$"),
+        plt.Line2D([0], [0], color=COLOR_PI, lw=2.5, label=r"Landau MPV — $\pi^+$"),
     ]
-    ax.legend(handles=legend_handles, fontsize=10, framealpha=0.85)
+    ax.legend(handles=legend_handles, fontsize=10, **_legend_kwargs())
 
     p_mip_pi = 3.5 * M_PI / 1000.0
     ax.axvline(p_mip_pi, color="gold", ls="--", lw=1.2, alpha=0.8)
     ax.text(p_mip_pi * 1.08, 0.05, r"MIP ($\pi^+$)", color="goldenrod", fontsize=8, va="bottom")
 
-    ax.set_xscale("log")
+    _setup_ax(ax, log_x=True)
     ax.set_xlabel(r"$p$  (GeV/c)", fontsize=13)
     ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
     ax.set_xlim(p_range_GeV); ax.set_ylim(0, DEDX_LIN_MAX)
     _add_info(ax)
-    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=13, y=0.96)
+    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=14, fontweight="bold", y=0.96)
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "pid_combined.png")
 
@@ -685,21 +742,22 @@ def plot_layer_hits(mu, pi, out_dir):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
     for ax, data, particle_label, color in [
-        (axes[0], mu, r"$\mu^+$", "steelblue"),
-        (axes[1], pi, r"$\pi^+$", "tomato"),
+        (axes[0], mu, r"$\mu^+$", COLOR_MU),
+        (axes[1], pi, r"$\pi^+$", COLOR_PI),
     ]:
         layer0 = (data["layerID"] == 0).sum()
         layer1 = (data["layerID"] == 1).sum()
         bars = ax.bar(["Capa 1\n(barras X)", "Capa 2\n(barras Y)"],
                       [layer0, layer1], color=[color, color], alpha=0.7,
-                      edgecolor="black")
+                      edgecolor="black", width=0.6)
         for rect, val in zip(bars, [layer0, layer1]):
             ax.text(rect.get_x() + rect.get_width() / 2, rect.get_height() * 1.01,
-                    f"{val:,}", ha="center", va="bottom", fontsize=10)
+                    f"{val:,}", ha="center", va="bottom", fontsize=10, fontweight="bold")
         ax.set_ylabel("Número de hits", fontsize=11)
         ax.set_ylim(0, max(layer0, layer1) * 1.15)
         ax.text(0.5, 0.97, f"Hits por capa — {particle_label}",
                 transform=ax.transAxes, fontsize=12, ha="center", va="top", fontweight="bold")
+        _setup_ax(ax)
         _add_info(ax, particle=particle_label)
 
     fig.tight_layout()
@@ -745,15 +803,15 @@ def plot_landau_corregida(mixed_path, out_dir):
     bins = np.linspace(0.01, 5.0, 100)
 
     ax.hist(mu_dedx, bins=bins, histtype="stepfilled",
-            color="steelblue", alpha=0.5, density=True,
+            color=COLOR_MU, alpha=0.5, density=True,
             label=rf"$\mu^+$  ({mu_events} eventos, {mu_hits_tot} hits)")
     ax.hist(mu_dedx, bins=bins, histtype="step",
-            color="steelblue", lw=2, density=True)
+            color=COLOR_MU, lw=2, density=True)
     ax.hist(pi_dedx, bins=bins, histtype="stepfilled",
-            color="tomato", alpha=0.4, density=True,
+            color=COLOR_PI, alpha=0.4, density=True,
             label=rf"$\pi^+$  ({pi_events} eventos, {pi_hits_tot} hits)")
     ax.hist(pi_dedx, bins=bins, histtype="step",
-            color="tomato", lw=2, density=True)
+            color=COLOR_PI, lw=2, density=True)
 
     ax.axvline(0.5, color="green", lw=2.5, ls="--",
                label=r"Umbral dE/dx = 0.5 MeV/mm")
@@ -762,9 +820,9 @@ def plot_landau_corregida(mixed_path, out_dir):
     ax.set_yscale("log")
     ax.set_xlim(0.01, 5.0)
     ax.set_ylim(1e-3, 5)
-    ax.legend(fontsize=10, loc="upper right")
-    ax.set_title(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)", fontsize=13)
-    ax.grid(True, alpha=0.3, which="both")
+    ax.legend(fontsize=10, loc="upper right", **_legend_kwargs())
+    ax.set_title(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)", fontsize=14, fontweight="bold", pad=17)
+    _setup_ax(ax, log_y=True)
 
     stats_text = (
         f"Estadísticas de dE/dx (MeV/mm):\n"
@@ -773,16 +831,16 @@ def plot_landau_corregida(mixed_path, out_dir):
         f"{'Mediana':>8} {mu_med:>8.4f}  {pi_med:>8.4f}\n"
         f"{'Hits totales':>8} {mu_hits_tot:>8d}  {pi_hits_tot:>8d}"
     )
-    ax.text(0.55, 0.65, stats_text, transform=ax.transAxes, fontsize=8.5,
-            family="monospace", va="top", ha="left",
-            bbox=dict(boxstyle="round,pad=0.5", facecolor="white", alpha=0.85, edgecolor="gray"))
+    ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=8.5,
+            family="monospace", va="top", ha="right",
+            bbox=_info_box_kwargs())
 
     info1 = (f"Geant4  |  ~1000 μ⁺ + ~1000 π⁺ generados  |  "
              f"{mu_events} μ⁺ detectados + {pi_events} π⁺ detectados = {tot_events} total")
     ax.text(0.01, 1.012, info1, transform=ax.transAxes,
             fontsize=8.5, va="bottom", ha="left", color="#333333", style="italic")
 
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0, 1, 0.92])
     _save(fig, out_dir, "landau_corregida.png")
 
 
@@ -829,9 +887,9 @@ def plot_eff_momento_corregida(mixed_path, out_dir):
 
     fig, ax = plt.subplots(figsize=(11, 7))
 
-    ax.errorbar(p_mu, e_mu * 100, yerr=err_mu * 100, fmt="o-", color="steelblue",
+    ax.errorbar(p_mu, e_mu * 100, yerr=err_mu * 100, fmt="o-", color=COLOR_MU,
                 lw=2, ms=5, capsize=3, capthick=1, label=r"$\mu^+$", zorder=3)
-    ax.errorbar(p_pi, e_pi * 100, yerr=err_pi * 100, fmt="s-", color="tomato",
+    ax.errorbar(p_pi, e_pi * 100, yerr=err_pi * 100, fmt="s-", color=COLOR_PI,
                 lw=2, ms=5, capsize=3, capthick=1, label=r"$\pi^+$", zorder=3)
 
     ax.axhline(50, color="gray", ls=":", lw=1, alpha=0.5)
@@ -839,28 +897,24 @@ def plot_eff_momento_corregida(mixed_path, out_dir):
     ax.set_ylabel(r"Eficiencia $\varepsilon$ (%)")
     ax.set_ylim(-3, 105)
     ax.set_xlim(0.04, 11)
-    ax.legend(fontsize=12, framealpha=0.85, loc="upper left")
-    ax.set_title(r"Eficiencia de detección $\varepsilon = N_{\mathrm{det}}/N_{\mathrm{gen}}$ vs $p_0$", fontsize=13)
-    ax.grid(True, alpha=0.3, which="both")
+    ax.set_title(r"Eficiencia de detección vs $p_0$", fontsize=14, fontweight="bold", pad=17)
+    _setup_ax(ax)
 
-    ax.axvspan(0.04, 0.5, alpha=0.06, color="gray")
-    ax.text(0.15, 52, "Régimen I:\nμ⁺ no penetran\n70 cm Fe\n(R μ⁺ < 70 cm)", fontsize=9,
+    ax.text(0.15, 8, "Régimen I:\nμ⁺ no penetran\n70 cm Fe", fontsize=9,
             color="gray", ha="center", va="bottom", alpha=0.7)
-    ax.axvspan(0.5, 1.1, alpha=0.06, color="steelblue")
-    ax.text(0.74, 52, "Régimen II:\ntransición μ⁺\n(R μ⁺ ≈ 70 cm)\nsubida sigmoidea",
-            fontsize=9, color="steelblue", ha="center", va="bottom", alpha=0.7)
-    ax.axvspan(1.1, 10, alpha=0.06, color="green")
-    ax.text(4.0, 52, "Régimen III:\nmeseta μ⁺\n(~89±1%)\ntodos penetran",
+    ax.text(0.74, 8, "Régimen II:\ntransición μ⁺\nsubida sigmoidea",
+            fontsize=9, color=COLOR_MU, ha="center", va="bottom", alpha=0.7)
+    ax.text(4.0, 8, "Régimen III:\nmeseta μ⁺ ~89%",
             fontsize=9, color="green", ha="center", va="bottom", alpha=0.7)
 
     ax.errorbar([], [], fmt="none",
                 label=r"Barras: $\sigma_\varepsilon = \sqrt{\varepsilon(1-\varepsilon)/1000}$")
-    ax.legend(fontsize=10, framealpha=0.85, loc="upper left")
+    ax.legend(fontsize=10, **_legend_kwargs(), loc="upper left")
 
     ax.text(0.01, 1.012, INFO_STR, transform=ax.transAxes,
             fontsize=8.5, va="bottom", ha="left", color="#333333", style="italic")
 
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0, 1, 0.92])
     _save(fig, out_dir, "eff_momento_corregida.png")
 
 
@@ -924,8 +978,8 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
     fig, ax = plt.subplots(figsize=(11, 7))
 
     for angles, color, label, marker in [
-        (mu_angles, "steelblue", r"$\mu^+$", "o"),
-        (pi_angles, "tomato", r"$\pi^+$", "s"),
+        (mu_angles, COLOR_MU, r"$\mu^+$", "o"),
+        (pi_angles, COLOR_PI, r"$\pi^+$", "s"),
     ]:
         if not angles:
             continue
@@ -941,44 +995,44 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
     ax.set_xlim(0, theta_max + 0.3)
     ax.set_ylim(-3, 110)
     ax.axhline(50, color="gray", ls=":", lw=1, alpha=0.5)
-    ax.legend(fontsize=12, framealpha=0.85)
-    ax.set_title(r"Eficiencia vs ángulo del cono $\theta$ — Bar Strip Detector", fontsize=13)
-    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=12, **_legend_kwargs())
+    ax.set_title(r"Eficiencia vs ángulo del cono $\theta$", fontsize=14, fontweight="bold", pad=17)
+    _setup_ax(ax)
 
     theta_lateral = np.degrees(np.arctan(35.0 / 270.0))
     tx_acc_cm = 50.0 * 200.0 / 300.5
     theta_geom = np.degrees(np.arctan(tx_acc_cm / 200.0))
 
-    ax.axvline(theta_lateral, color="goldenrod", ls=":", lw=2, alpha=0.8, zorder=1)
-    ax.axvline(theta_geom, color="#8B008B", ls=":", lw=2, alpha=0.8, zorder=1)
+    ax.axvline(theta_lateral, color="goldenrod", ls=":", lw=1.5, alpha=0.8, zorder=1)
+    ax.axvline(theta_geom, color="#8B008B", ls=":", lw=1.5, alpha=0.8, zorder=1)
 
-    ax.annotate("Partícula sale\npor cara lateral\ndel Fe",
-                xy=(theta_lateral, 50), xytext=(theta_lateral + 1.5, 70),
-                fontsize=9, color="goldenrod",
+    ax.annotate("Sale por cara\nlateral del Fe",
+                xy=(theta_lateral, 50), xytext=(theta_lateral + 1.5, 80),
+                fontsize=8.5, color="goldenrod",
                 arrowprops=dict(arrowstyle="->", color="goldenrod", lw=1.5),
-                bbox=dict(boxstyle="round", facecolor="#fff8dc", alpha=0.8))
+                bbox=_info_box_kwargs(facecolor="#fff8dc", alpha=0.8, edgecolor="goldenrod"))
 
-    ax.annotate("Límite geométrico:\nbarras ±50 cm",
-                xy=(theta_geom, 50), xytext=(theta_geom - 3, 70),
-                fontsize=9, color="#8B008B",
+    ax.annotate("Límite geométrico\nbarras ±50 cm",
+                xy=(theta_geom, 50), xytext=(theta_geom - 3, 80),
+                fontsize=8.5, color="#8B008B",
                 arrowprops=dict(arrowstyle="->", color="#8B008B", lw=1.5),
-                bbox=dict(boxstyle="round", facecolor="#f0e6f6", alpha=0.8))
+                bbox=_info_box_kwargs(facecolor="#f0e6f6", alpha=0.8, edgecolor="#8B008B"))
 
-    ax.text(0.03, 0.05,
+    ax.text(0.98, 0.02,
             "θ medido con columna ConeAngle\n"
             "(ángulo inicial traza vs eje z):\n"
-            "  • Más preciso que reconstrucción\n"
+            "  · Más preciso que reconstrucción\n"
             "    desde posiciones de barra\n"
-            "  • Resolución limitada por paso\n"
+            "  · Resolución limitada por paso\n"
             "    de barra de 5 cm (~0.7°)",
             transform=ax.transAxes, fontsize=8.5, color="gray",
-            va="bottom", ha="left", style="italic",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8, edgecolor="gray"))
+            va="bottom", ha="right", style="italic",
+            bbox=_info_box_kwargs())
 
     ax.text(0.01, 1.012, INFO_STR, transform=ax.transAxes,
             fontsize=8.5, va="bottom", ha="left", color="#333333", style="italic")
 
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0, 1, 0.92])
     _save(fig, out_dir, "eff_angulo_corregida.png")
 
 
