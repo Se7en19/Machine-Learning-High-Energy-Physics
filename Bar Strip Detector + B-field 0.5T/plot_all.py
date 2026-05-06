@@ -682,7 +682,7 @@ def plot_overlay(mu, pi, out_dir):
     ax.set_xlim(bg_range); ax.set_ylim(DEDX_MIN, DEDX_MAX)
     ax.legend(fontsize=10, **_legend_kwargs())
     _add_info(ax)
-    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=14, fontweight="bold", y=0.93)
+    fig.suptitle(r"Bethe-Bloch overlay: $\mu^+$ vs $\pi^+$ en BC404 (barras 1 cm)", fontsize=14, fontweight="bold", y=0.88)
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "bethe_bloch_overlay.png")
 
@@ -749,7 +749,7 @@ def plot_pid_combined(mu, pi, out_dir):
     ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
     ax.set_xlim(p_range_GeV); ax.set_ylim(0, DEDX_LIN_MAX)
     _add_info(ax)
-    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=14, fontweight="bold", y=0.93)
+    fig.suptitle(r"PID: $\mu^+$ vs $\pi^+$ en BC404 bar strip detector", fontsize=14, fontweight="bold", y=0.88)
     fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "pid_combined.png")
 
