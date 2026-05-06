@@ -386,7 +386,7 @@ def plot_dedx_vs_p(mu, pi, out_dir):
 # PLOT 4: Detector layout (schematic)
 # ============================================================================
 def plot_detector_layout(out_dir, seed=42):
-    from matplotlib.patches import Rectangle
+    from matplotlib.patches import Rectangle, Patch
     from matplotlib.lines import Line2D
 
     rng = np.random.default_rng(seed)
@@ -410,9 +410,10 @@ def plot_detector_layout(out_dir, seed=42):
 
     fig = plt.figure(figsize=(21, 7))
     fig.suptitle(
-        r"Bar Strip Detector — Configuración del sistema" + "\n"
+        r"Bar Strip Detector + $B_z = 0.5\ \mathrm{T}$ — Configuración del sistema" + "\n"
         r"Absorbedor: G4\_Fe  70$\times$70$\times$70 cm  |  "
-        r"Centellador: G4\_PLASTIC\_SC\_VINYLTOLUENE (BC404, $\rho$=1.032 g/cm$^3$)",
+        r"Centellador: BC404  |  "
+        r"Campo magnético: $B_z = 0.5\ \mathrm{T}$ en región vacío (fuente → Fe)",
         fontsize=12, fontweight="bold", y=0.99, va="top")
 
     gs = fig.add_gridspec(1, 3, width_ratios=[3.2, 2, 2],
@@ -454,6 +455,22 @@ def plot_detector_layout(out_dir, seed=42):
     ax.text(z_L2, -(x_bar_c + 5),
             "Capa 2\n(barras Y)", ha="center", va="top",
             fontsize=8.5, color="firebrick", fontweight="bold")
+
+    # ── Región del campo magnético Bz = 0.5 T (z = -200 cm a z = 0) ──
+    ax.fill([z_src, z_fe0, z_fe0, z_src],
+            [-x_fe - 4, -x_fe - 4, x_fe + 4, x_fe + 4],
+            color="deepskyblue", alpha=0.08, zorder=0)
+    ax.text((z_src + z_fe0) / 2, x_fe + 2,
+            r"$\vec{B}_z = 0.5\ \mathrm{T}$",
+            ha="center", va="bottom", fontsize=10,
+            color="deepskyblue", fontweight="bold", zorder=4)
+
+    # Flechas de campo magnético (↑ hacia +z, representando Bz) — 4 flechas uniformes
+    for zb in np.linspace(z_src + 30, z_fe0 - 15, 4):
+        ax.annotate("", xy=(zb + 20, 0), xytext=(zb, 0),
+                    arrowprops=dict(arrowstyle="-|>", color="deepskyblue",
+                                    lw=1.5, mutation_scale=12),
+                    zorder=4)
 
     for tx in np.linspace(-28, 28, 6):
         x_end = tx * (z_L2 + 6 - z_src) / (-z_src)
@@ -512,6 +529,8 @@ def plot_detector_layout(out_dir, seed=42):
             "30 cm", ha="center", va="top", fontsize=9)
 
     legend_elems = [
+        Patch(facecolor="deepskyblue", alpha=0.25,
+              label=r"Región $B_z = 0.5\ \mathrm{T}$"),
         Line2D([0], [0], marker="*", color="darkred", linestyle="None", ms=11,
                label="fuente puntual"),
         Line2D([0], [0], color="darkorange", lw=2,
@@ -821,7 +840,7 @@ def plot_landau_corregida(mixed_path, out_dir):
     ax.set_xlim(0.01, 5.0)
     ax.set_ylim(1e-3, 5)
     ax.legend(fontsize=10, loc="upper right", **_legend_kwargs())
-    ax.set_title(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)", fontsize=14, fontweight="bold", pad=17)
+    ax.set_title(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)", fontsize=14, fontweight="bold", pad=10)
     _setup_ax(ax, log_y=True)
 
     stats_text = (
@@ -831,16 +850,16 @@ def plot_landau_corregida(mixed_path, out_dir):
         f"{'Mediana':>8} {mu_med:>8.4f}  {pi_med:>8.4f}\n"
         f"{'Hits totales':>8} {mu_hits_tot:>8d}  {pi_hits_tot:>8d}"
     )
-    ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=8.5,
-            family="monospace", va="top", ha="right",
+    ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=8.5,
+            family="monospace", va="top", ha="left",
             bbox=_info_box_kwargs())
 
     info1 = (f"Geant4  |  ~1000 μ⁺ + ~1000 π⁺ generados  |  "
              f"{mu_events} μ⁺ detectados + {pi_events} π⁺ detectados = {tot_events} total")
-    ax.text(0.01, 1.012, info1, transform=ax.transAxes,
+    ax.text(0.01, 1.005, info1, transform=ax.transAxes,
             fontsize=8.5, va="bottom", ha="left", color="#333333", style="italic")
 
-    fig.tight_layout(rect=[0, 0, 1, 0.92])
+    fig.tight_layout(rect=[0, 0, 1, 0.90])
     _save(fig, out_dir, "landau_corregida.png")
 
 
@@ -897,24 +916,30 @@ def plot_eff_momento_corregida(mixed_path, out_dir):
     ax.set_ylabel(r"Eficiencia $\varepsilon$ (%)")
     ax.set_ylim(-3, 105)
     ax.set_xlim(0.04, 11)
-    ax.set_title(r"Eficiencia de detección vs $p_0$", fontsize=14, fontweight="bold", pad=17)
+    ax.set_title(r"Eficiencia de detección vs $p_0$", fontsize=14, fontweight="bold", pad=10)
     _setup_ax(ax)
 
-    ax.text(0.15, 8, "Régimen I:\nμ⁺ no penetran\n70 cm Fe", fontsize=9,
-            color="gray", ha="center", va="bottom", alpha=0.7)
-    ax.text(0.74, 8, "Régimen II:\ntransición μ⁺\nsubida sigmoidea",
-            fontsize=9, color=COLOR_MU, ha="center", va="bottom", alpha=0.7)
-    ax.text(4.0, 8, "Régimen III:\nmeseta μ⁺ ~89%",
-            fontsize=9, color="green", ha="center", va="bottom", alpha=0.7)
+    ax.axvline(0.5, color="gray", ls=":", lw=1.2, alpha=0.6, zorder=0)
+    ax.axvline(1.1, color=COLOR_MU, ls=":", lw=1.2, alpha=0.6, zorder=0)
+
+    ax.text(0.085, 55, "Régimen I:\nμ⁺ no penetran\n70 cm Fe",
+            fontsize=8.5, color="gray", ha="center", va="bottom",
+            alpha=0.8, style="italic")
+    ax.text(0.74, 55, "Régimen II:\ntransición μ⁺\nsigmoidal",
+            fontsize=8.5, color=COLOR_MU, ha="center", va="bottom",
+            alpha=0.8, style="italic")
+    ax.text(3.5, 55, "Régimen III:\nmeseta ~89%",
+            fontsize=8.5, color="green", ha="center", va="bottom",
+            alpha=0.8, style="italic")
 
     ax.errorbar([], [], fmt="none",
                 label=r"Barras: $\sigma_\varepsilon = \sqrt{\varepsilon(1-\varepsilon)/1000}$")
     ax.legend(fontsize=10, **_legend_kwargs(), loc="upper left")
 
-    ax.text(0.01, 1.012, INFO_STR, transform=ax.transAxes,
+    ax.text(0.01, 1.005, INFO_STR, transform=ax.transAxes,
             fontsize=8.5, va="bottom", ha="left", color="#333333", style="italic")
 
-    fig.tight_layout(rect=[0, 0, 1, 0.92])
+    fig.tight_layout(rect=[0, 0, 1, 0.90])
     _save(fig, out_dir, "eff_momento_corregida.png")
 
 
@@ -996,7 +1021,7 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
     ax.set_ylim(-3, 110)
     ax.axhline(50, color="gray", ls=":", lw=1, alpha=0.5)
     ax.legend(fontsize=12, **_legend_kwargs())
-    ax.set_title(r"Eficiencia vs ángulo del cono $\theta$", fontsize=14, fontweight="bold", pad=17)
+    ax.set_title(r"Eficiencia vs ángulo del cono $\theta$", fontsize=14, fontweight="bold", pad=10)
     _setup_ax(ax)
 
     theta_lateral = np.degrees(np.arctan(35.0 / 270.0))
@@ -1007,32 +1032,32 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
     ax.axvline(theta_geom, color="#8B008B", ls=":", lw=1.5, alpha=0.8, zorder=1)
 
     ax.annotate("Sale por cara\nlateral del Fe",
-                xy=(theta_lateral, 50), xytext=(theta_lateral + 1.5, 80),
+                xy=(theta_lateral, 30), xytext=(theta_lateral - 2.5, 75),
                 fontsize=8.5, color="goldenrod",
                 arrowprops=dict(arrowstyle="->", color="goldenrod", lw=1.5),
-                bbox=_info_box_kwargs(facecolor="#fff8dc", alpha=0.8, edgecolor="goldenrod"))
+                bbox=dict(boxstyle="round", facecolor="#fff8dc", alpha=0.85, edgecolor="goldenrod"))
 
     ax.annotate("Límite geométrico\nbarras ±50 cm",
-                xy=(theta_geom, 50), xytext=(theta_geom - 3, 80),
+                xy=(theta_geom, 20), xytext=(theta_geom + 0.5, 75),
                 fontsize=8.5, color="#8B008B",
                 arrowprops=dict(arrowstyle="->", color="#8B008B", lw=1.5),
-                bbox=_info_box_kwargs(facecolor="#f0e6f6", alpha=0.8, edgecolor="#8B008B"))
+                bbox=dict(boxstyle="round", facecolor="#f0e6f6", alpha=0.85, edgecolor="#8B008B"))
 
-    ax.text(0.98, 0.02,
+    ax.text(0.02, 0.02,
             "θ medido con columna ConeAngle\n"
             "(ángulo inicial traza vs eje z):\n"
             "  · Más preciso que reconstrucción\n"
             "    desde posiciones de barra\n"
             "  · Resolución limitada por paso\n"
             "    de barra de 5 cm (~0.7°)",
-            transform=ax.transAxes, fontsize=8.5, color="gray",
-            va="bottom", ha="right", style="italic",
-            bbox=_info_box_kwargs())
+            transform=ax.transAxes, fontsize=8, color="gray",
+            va="bottom", ha="left", style="italic",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8, edgecolor="lightgray"))
 
-    ax.text(0.01, 1.012, INFO_STR, transform=ax.transAxes,
+    ax.text(0.01, 1.005, INFO_STR, transform=ax.transAxes,
             fontsize=8.5, va="bottom", ha="left", color="#333333", style="italic")
 
-    fig.tight_layout(rect=[0, 0, 1, 0.92])
+    fig.tight_layout(rect=[0, 0, 1, 0.90])
     _save(fig, out_dir, "eff_angulo_corregida.png")
 
 

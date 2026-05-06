@@ -96,4 +96,9 @@ void MyDetectorConstruction::ConstructSDandField()
 
 	fieldMgr->SetDetectorField(magField);
 	fieldMgr->CreateChordFinder(magField);
+
+	// Ajustes para bajos momentos (evita pasos infinitesimales en espirales)
+	fieldMgr->GetChordFinder()->SetDeltaChord(1.0*mm);
+	fieldMgr->SetMinimumEpsilonStep(1e-4);
+	fieldMgr->SetMaximumEpsilonStep(1e-2);
 }
