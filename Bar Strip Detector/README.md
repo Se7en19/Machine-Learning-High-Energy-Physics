@@ -236,7 +236,7 @@ Número de hits en Capa 1 vs Capa 2 para cada especie. Los μ⁺ muestran ~2 % d
 
 ![Eficiencia corregida vs p₀](img/eff_momento_corregida.png)
 
-El eje X es el momento inicial p₀ del barrido logarítmico (50 MeV/c a 10 GeV/c, 80 puntos), no el momento que mide el centellador. Si usas el momento detectado después del Fe salen picos artificiales, porque la pérdida de energía y la dispersión múltiple en el hierro distorsionan la distribución original.
+El eje X es el momento inicial p₀ del barrido logarítmico (50 MeV/c a 10 GeV/c, 80 puntos), no el momento medido en el centellador. Usar el momento post-Fe introduce picos artificiales: la pérdida de energía y la dispersión múltiple en el hierro distorsionan la distribución original.
 
 μ⁺ sube de 0 a ≈ 89 % entre 500 y 700 MeV/c. Ese rango coincide con el umbral de rango en 70 cm de hierro: por debajo el muón se queda dentro, por encima lo atraviesa. Se ven tres regímenes:
 
@@ -252,7 +252,7 @@ El eje X es el momento inicial p₀ del barrido logarítmico (50 MeV/c a 10 GeV/
 
 ![Eficiencia corregida vs θ](img/eff_angulo_corregida.png)
 
-θ viene directo de la columna `ConeAngle` del NTuple de Geant4: el ángulo entre `GetVertexMomentumDirection()` y el eje z en el punto de origen (z = −2 m), antes de que la partícula toque el hierro. Si reconstruyes θ desde las posiciones centrales de las barras solo obtienes ~14 valores discretos (paso de 5 cm, ~0.7° por coordenada) y la curva sale con oscilaciones. Con ConeAngle la distribución es continua y la eficiencia se ve suave.
+θ viene directo de la columna `ConeAngle` del NTuple de Geant4: el ángulo entre `GetVertexMomentumDirection()` y el eje z en el punto de origen (z = −2 m), antes de que la partícula toque el hierro. Reconstruirlo desde las posiciones centrales de las barras daría solo ~14 valores discretos (paso de 5 cm, ~0.7° por coordenada) y la curva saldría con oscilaciones. Con ConeAngle la distribución es continua y la eficiencia queda suave.
 
 Dos líneas verticales marcan cortes geométricos:
 
@@ -521,7 +521,7 @@ Hit count in Layer 1 vs Layer 2 for each species. μ⁺ show ~2 % asymmetry betw
 
 ![Corrected efficiency vs p₀](img/eff_momento_corregida.png)
 
-The X axis is the initial momentum p₀ from the logarithmic sweep (50 MeV/c to 10 GeV/c, 80 points), not the momentum measured in the scintillator. If you use the detected momentum after the Fe you get artificial peaks, because energy loss and multiple scattering in the iron distort the original distribution.
+The X axis is the initial momentum p₀ from the logarithmic sweep (50 MeV/c to 10 GeV/c, 80 points), not the momentum measured in the scintillator. Using post-Fe momentum instead introduces artificial peaks: energy loss and multiple scattering in the iron distort the original distribution.
 
 μ⁺ rises from 0 to ≈ 89 % between 500 and 700 MeV/c. That range matches the range threshold in 70 cm of iron: below it the muon stops inside, above it punches through. Three regimes show up clearly:
 
@@ -537,7 +537,7 @@ The X axis is the initial momentum p₀ from the logarithmic sweep (50 MeV/c to 
 
 ![Corrected efficiency vs θ](img/eff_angulo_corregida.png)
 
-θ comes straight from the `ConeAngle` column of the Geant4 NTuple: the angle between `GetVertexMomentumDirection()` and the z-axis at the origin (z = −2 m), before the particle hits any iron. If you reconstruct θ from bar hit positions you only get ~14 discrete values (5 cm pitch, ~0.7° per coordinate) and the curve comes out with oscillations. With ConeAngle the angular distribution is continuous and the efficiency looks smooth.
+θ comes straight from the `ConeAngle` column of the Geant4 NTuple: the angle between `GetVertexMomentumDirection()` and the z-axis at the origin (z = −2 m), before the particle hits any iron. Reconstructing θ from bar hit positions gives only ~14 discrete values (5 cm pitch, ~0.7° per coordinate), and the curve comes out with oscillations. With ConeAngle the distribution is continuous and the efficiency curve comes out smooth.
 
 Two vertical lines mark geometric cutoffs:
 

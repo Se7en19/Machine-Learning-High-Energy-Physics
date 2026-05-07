@@ -821,7 +821,8 @@ def plot_landau_corregida(mixed_path, out_dir):
     ax.set_xlim(0.01, 5.0)
     ax.set_ylim(1e-3, 5)
     ax.legend(fontsize=10, loc="upper right", **_legend_kwargs())
-    ax.set_title(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)", fontsize=14, fontweight="bold", pad=17)
+    fig.suptitle(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)",
+                 fontsize=14, fontweight="bold", y=0.98)
     _setup_ax(ax, log_y=True)
 
     stats_text = (
@@ -837,10 +838,10 @@ def plot_landau_corregida(mixed_path, out_dir):
 
     info1 = (f"Geant4  |  ~1000 μ⁺ + ~1000 π⁺ generados  |  "
              f"{mu_events} μ⁺ detectados + {pi_events} π⁺ detectados = {tot_events} total")
-    ax.text(0.01, 1.012, info1, transform=ax.transAxes,
+    ax.text(0.01, 1.008, info1, transform=ax.transAxes,
             fontsize=8.5, va="bottom", ha="left", color="#333333", style="italic")
 
-    fig.tight_layout(rect=[0, 0, 1, 0.92])
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
     _save(fig, out_dir, "landau_corregida.png")
 
 
