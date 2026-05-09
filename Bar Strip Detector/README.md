@@ -210,17 +210,17 @@ Distribución de dE/dx por paso en el run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1
 
 ---
 
-### Overlay con banda IQR
+### Overlay dE/dx vs βγ (práctica estándar HEP)
 
 ![Overlay](img/bethe_bloch_overlay.png)
 
-Mediana de dE/dx vs βγ con banda intercuartílica (percentiles 25–75) para ambas especies. Las dos siguen la misma curva teórica de Landau MPV (línea negra). La banda de π⁺ es más estrecha a alto βγ porque llegan menos piones al centellador.
+Mediana de dE/dx por run para μ⁺ y π⁺ con barras de error **σ/√N** (standard error of the median). Cada punto corresponde a un run del barrido en momento. La curva negra discontinua es la predicción Landau MPV de Bethe-Bloch. Las barras grandes a bajo βγ reflejan la poca estadística disponible cuando pocas partículas atraviesan el Fe. Los detalles completos de la construcción de esta gráfica están en la sección Metodología más abajo.
 
 ---
 
 ### Metodología: Cómo se construye la gráfica dE/dx vs βγ (práctica estándar HEP)
 
-Esta sección describe la construcción de la gráfica `bethe_bloch_overlay.png` siguiendo el formato típico de publicaciones HEP. La versión corregida (estándar) se guarda en `img/history_img/` y representa cada run como un punto discreto, no como un bin re-muestreado.
+Esta sección describe la construcción de la gráfica `bethe_bloch_overlay.png` siguiendo el formato típico de publicaciones HEP.
 
 #### Paso 1 — 80 runs, 80 momentos
 
@@ -554,17 +554,17 @@ dE/dx per step in run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generated)
 
 ---
 
-### Overlay with IQR band
+### Overlay dE/dx vs βγ (standard HEP practice)
 
 ![Overlay](img/bethe_bloch_overlay.png)
 
-Median dE/dx vs βγ with the interquartile range (25th–75th percentile) for both species. Both follow the same theoretical Landau MPV curve (black line). The π⁺ band is narrower at high βγ because fewer pions make it to the scintillator.
+Median dE/dx per run for μ⁺ and π⁺ with **σ/√N** error bars (standard error of the median). Each point corresponds to one run of the momentum sweep. The dashed black curve is the Bethe-Bloch Landau MPV prediction. Large bars at low βγ reflect low statistics when few particles cross the Fe. Full construction details in the Methodology section below.
 
 ---
 
 ### Methodology: How the dE/dx vs βγ plot is built (standard HEP practice)
 
-This section describes how `bethe_bloch_overlay.png` is built following the typical format of HEP publications. The corrected (standard) version is saved to `img/history_img/` and represents each run as a discrete point, not as a re-binned sample.
+This section describes how `bethe_bloch_overlay.png` is built following the typical format of HEP publications.
 
 #### Step 1 — 80 runs, 80 momenta
 
