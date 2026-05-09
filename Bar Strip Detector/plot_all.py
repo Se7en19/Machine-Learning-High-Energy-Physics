@@ -54,7 +54,7 @@ M_E   = 0.51099895    # MeV/c^2
 AIR = dict(Z_over_A=0.5424, I=64.7e-6, rho=1.032)
 K   = 0.307075        # MeV*cm^2/mol
 
-DEDX_MIN = 0.01       # MeV/mm
+DEDX_MIN = 0.05       # MeV/mm  (umbral real — coincide con kDEDXThreshold en detector.cc)
 DEDX_MAX = 5.0        # MeV/mm
 CMAP = "viridis"
 
@@ -249,6 +249,64 @@ def load_mixed_hits(glob_pattern: str):
     mu = _make_species(0, M_MU, "mu+")
     pi = _make_species(1, M_PI, "pi+")
     return mu, pi
+
+
+def load_mixed_hits_by_run(glob_pattern):
+    files = sorted(glob.glob(glob_pattern))
+    if not files:
+        raise FileNotFoundError(f"[ERROR] No files match: {glob_pattern}")
+
+    n_runs = 80
+    p_sweep_GeV = np.logspace(np.log10(0.05), np.log10(10.0), n_runs)
+    p_sweep_MeV = p_sweep_GeV * 1000.0
+    bg_mu = p_sweep_MeV / M_MU
+    bg_pi = p_sweep_MeV / M_PI
+
+    mu_med = np.full(n_runs, np.nan)
+    mu_n   = np.zeros(n_runs, dtype=int)
+    mu_std_err = np.full(n_runs, np.nan)
+    pi_med = np.full(n_runs, np.nan)
+    pi_n   = np.zeros(n_runs, dtype=int)
+    pi_std_err = np.full(n_runs, np.nan)
+
+    for fpath in files:
+        run_id = run_num(fpath)
+        if run_id >= n_runs:
+            continue
+        with uproot.open(fpath) as f:
+            tree = _best_cycle(f)
+            if tree is None:
+                continue
+            d = tree.arrays(["fdEdx", "particleID", "Momentum"], library="np")
+
+        mask = (d["fdEdx"] >= DEDX_MIN) & (d["fdEdx"] <= DEDX_MAX) & (d["Momentum"] > 0)
+
+        m_mu = mask & (d["particleID"] == 0)
+        if m_mu.sum() > 1:
+            mu_med[run_id] = np.median(d["fdEdx"][m_mu])
+            mu_n[run_id] = m_mu.sum()
+            mu_std_err[run_id] = np.std(d["fdEdx"][m_mu]) / np.sqrt(mu_n[run_id])
+
+        m_pi = mask & (d["particleID"] == 1)
+        if m_pi.sum() > 1:
+            pi_med[run_id] = np.median(d["fdEdx"][m_pi])
+            pi_n[run_id] = m_pi.sum()
+            pi_std_err[run_id] = np.std(d["fdEdx"][m_pi]) / np.sqrt(pi_n[run_id])
+
+        print(f"  Run {run_id:2d}: p={p_sweep_MeV[run_id]:.1f} MeV/c,  "
+              f"mu+ hits={mu_n[run_id]:6d},  pi+ hits={pi_n[run_id]:6d}")
+
+    return dict(
+        momentum=p_sweep_MeV,
+        bg_mu=bg_mu,
+        bg_pi=bg_pi,
+        mu_median=mu_med,
+        mu_nhits=mu_n,
+        mu_std_err=mu_std_err,
+        pi_median=pi_med,
+        pi_nhits=pi_n,
+        pi_std_err=pi_std_err,
+    )
 
 
 # ============================================================================
@@ -785,8 +843,8 @@ def plot_landau_corregida(mixed_path, out_dir):
             return
         d45 = tree.arrays(["fdEdx", "particleID", "fEvent", "layerID", "Momentum"], library="np")
 
-    mu_mask = d45["particleID"] == 0
-    pi_mask = d45["particleID"] == 1
+    mu_mask = (d45["particleID"] == 0) & (d45["fdEdx"] >= DEDX_MIN) & (d45["fdEdx"] <= DEDX_MAX) & (d45["Momentum"] > 0)
+    pi_mask = (d45["particleID"] == 1) & (d45["fdEdx"] >= DEDX_MIN) & (d45["fdEdx"] <= DEDX_MAX) & (d45["Momentum"] > 0)
 
     mu_dedx = d45["fdEdx"][mu_mask]
     pi_dedx = d45["fdEdx"][pi_mask]
@@ -800,7 +858,7 @@ def plot_landau_corregida(mixed_path, out_dir):
     pi_mean, pi_med = np.mean(pi_dedx), np.median(pi_dedx)
 
     fig, ax = plt.subplots(figsize=(11, 7))
-    bins = np.linspace(0.01, 5.0, 100)
+    bins = np.linspace(DEDX_MIN, 5.0, 100)
 
     ax.hist(mu_dedx, bins=bins, histtype="stepfilled",
             color=COLOR_MU, alpha=0.5, density=True,
@@ -813,12 +871,12 @@ def plot_landau_corregida(mixed_path, out_dir):
     ax.hist(pi_dedx, bins=bins, histtype="step",
             color=COLOR_PI, lw=2, density=True)
 
-    ax.axvline(0.5, color="green", lw=2.5, ls="--",
-               label=r"Umbral dE/dx = 0.5 MeV/mm")
+    ax.axvline(DEDX_MIN, color="green", lw=2.5, ls="--",
+               label=f"Umbral dE/dx = {DEDX_MIN} MeV/mm")
     ax.set_xlabel(r"$dE/dx$ por paso  (MeV/mm)")
     ax.set_ylabel("Densidad (normalizada)")
     ax.set_yscale("log")
-    ax.set_xlim(0.01, 5.0)
+    ax.set_xlim(DEDX_MIN, 5.0)
     ax.set_ylim(1e-3, 5)
     ax.legend(fontsize=10, loc="upper right", **_legend_kwargs())
     fig.suptitle(r"Distribución de Landau — haz mixto $\mu^+$/$\pi^+$  ($p_0 \approx 1$ GeV/c)",
@@ -863,17 +921,27 @@ def plot_eff_momento_corregida(mixed_path, out_dir):
             tree = _best_cycle(f)
             if tree is None:
                 continue
-            d = tree.arrays(["particleID", "fEvent"], library="np")
+            d = tree.arrays(["particleID", "fEvent", "layerID", "fdEdx"], library="np")
 
         for pid, rec_list in [(0, records_mu), (1, records_pi)]:
             mask = d["particleID"] == pid
-            n = mask.sum()
-            if n == 0:
+            if mask.sum() == 0:
                 rec_list.append({"p0": p0, "eff": 0, "n_det": 0, "run": rn})
-            else:
-                n_det = len(np.unique(d["fEvent"][mask]))
-                eff = n_det / 1000.0
-                rec_list.append({"p0": p0, "eff": eff, "n_det": n_det, "run": rn})
+                continue
+
+            ev_ids = np.unique(d["fEvent"][mask])
+            n_det = 0
+            for ev in ev_ids:
+                ev_mask = (d["fEvent"] == ev) & mask
+                lay = d["layerID"][ev_mask]
+                dedx = d["fdEdx"][ev_mask]
+                has_L0 = np.any((lay == 0) & (dedx >= DEDX_MIN))
+                has_L1 = np.any((lay == 1) & (dedx >= DEDX_MIN))
+                if has_L0 and has_L1:
+                    n_det += 1
+
+            eff = n_det / 1000.0
+            rec_list.append({"p0": p0, "eff": eff, "n_det": n_det, "run": rn})
 
     mu_recs = sorted(records_mu, key=lambda r: r["p0"])
     pi_recs = sorted(records_pi, key=lambda r: r["p0"])
@@ -924,22 +992,33 @@ def plot_eff_momento_corregida(mixed_path, out_dir):
 # ============================================================================
 def plot_eff_angulo_corregida(mixed_path, out_dir):
     files = sorted(glob.glob(mixed_path), key=run_num)
-    n_runs = len([f for f in files if run_num(f) < 80])
+    p0_vals_GeV = np.logspace(np.log10(0.05), np.log10(10.0), 80)
+    P_THRESHOLD = 0.7    # GeV/c — solo runs donde μ⁺ ya atraviesan el Fe
 
     L_src = 2000.0
-    mu_angles, pi_angles = [], []
+    theta_max = np.degrees(np.arctan2(np.sqrt(350**2 + 350**2), L_src))
+    n_bins = 18
+    bin_edges = np.linspace(0, theta_max, n_bins + 1)
+    bc = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+
+    h_det_mu = np.zeros(n_bins, dtype=float)
+    h_det_pi = np.zeros(n_bins, dtype=float)
+    n_runs_used = 0
 
     for fpath in files:
         rn = run_num(fpath)
-        if rn >= 80:
+        if rn >= 80 or p0_vals_GeV[rn] < P_THRESHOLD:
             continue
+        n_runs_used += 1
         with uproot.open(fpath) as f:
             tree = _best_cycle(f)
             if tree is None:
                 continue
-            d = tree.arrays(["fEvent", "particleID", "ConeAngle", "layerID"], library="np")
+            d = tree.arrays(
+                ["fEvent", "particleID", "ConeAngle", "layerID", "fdEdx"],
+                library="np")
 
-        for pid_val, ang_list in [(0, mu_angles), (1, pi_angles)]:
+        for pid_val, h_det in [(0, h_det_mu), (1, h_det_pi)]:
             mask_pid = d["particleID"] == pid_val
             if mask_pid.sum() == 0:
                 continue
@@ -947,24 +1026,24 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
             ev_p = d["fEvent"][mask_pid]
             cone_p = d["ConeAngle"][mask_pid]
             lay_p = d["layerID"][mask_pid]
+            dedx_p = d["fdEdx"][mask_pid]
 
             for ev in np.unique(ev_p):
                 m_ev = ev_p == ev
                 lay_ev = lay_p[m_ev]
+                dedx_ev = dedx_p[m_ev]
                 cone_ev = cone_p[m_ev]
 
-                m0 = lay_ev == 0
-                m1 = lay_ev == 1
-                if m0.sum() == 0 or m1.sum() == 0:
+                has_L0 = np.any((lay_ev == 0) & (dedx_ev >= DEDX_MIN))
+                has_L1 = np.any((lay_ev == 1) & (dedx_ev >= DEDX_MIN))
+                if not (has_L0 and has_L1):
                     continue
 
                 cone_med = np.median(cone_ev)
-                ang_list.append(np.degrees(cone_med))
-
-    theta_max = np.degrees(np.arctan2(np.sqrt(350**2 + 350**2), L_src))
-    n_bins = 18
-    bin_edges = np.linspace(0, theta_max, n_bins + 1)
-    bc = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+                cone_deg = np.degrees(cone_med)
+                idx = np.digitize(cone_deg, bin_edges) - 1
+                if 0 <= idx < n_bins:
+                    h_det[idx] += 1
 
     rng = np.random.default_rng(42)
     N_mc = 2_000_000
@@ -973,18 +1052,15 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
     theta_mc = np.degrees(np.arctan2(np.sqrt(tx_mc**2 + ty_mc**2), L_src))
     h_mc, _ = np.histogram(theta_mc, bins=bin_edges)
     p_theory = h_mc / h_mc.sum()
-    n_total_per_species = n_runs * 1000.0
+    n_total_per_species = n_runs_used * 1000.0
     n_gen = p_theory * n_total_per_species
 
     fig, ax = plt.subplots(figsize=(11, 7))
 
-    for angles, color, label, marker in [
-        (mu_angles, COLOR_MU, r"$\mu^+$", "o"),
-        (pi_angles, COLOR_PI, r"$\pi^+$", "s"),
+    for h_det, color, label, marker in [
+        (h_det_mu, COLOR_MU, r"$\mu^+$", "o"),
+        (h_det_pi, COLOR_PI, r"$\pi^+$", "s"),
     ]:
-        if not angles:
-            continue
-        h_det, _ = np.histogram(angles, bins=bin_edges)
         eff = np.where(n_gen > 10, h_det / n_gen, np.nan)
         err = np.where(n_gen > 10, np.sqrt(eff * (1 - eff) / n_gen), np.nan)
         eff = np.clip(eff, 0, 1.05)
@@ -1038,13 +1114,69 @@ def plot_eff_angulo_corregida(mixed_path, out_dir):
 
 
 # ============================================================================
+# PLOT 8b: dE/dx vs βγ — práctica estándar HEP (80 runs = 80 puntos)
+# ============================================================================
+def plot_bethe_bloch_standard(mixed_path, out_dir):
+    r"""dE/dx vs βγ — HEP standard: median per run + std/sqrt(N) error bars + Landau MPV.
+
+    Barras de error = standard error of the median (std / sqrt(N_hits)).
+    """
+    data = load_mixed_hits_by_run(mixed_path)
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    bg_range = (0.3, 100)
+
+    v_mu = ~np.isnan(data["mu_median"])
+    v_pi = ~np.isnan(data["pi_median"])
+
+    ax.errorbar(data["bg_mu"][v_mu], data["mu_median"][v_mu],
+                yerr=data["mu_std_err"][v_mu],
+                fmt="o", color=COLOR_MU, capsize=3, capthick=1.2,
+                markersize=5, elinewidth=1.2,
+                label=r"$\mu^+$  mediana / run")
+    ax.plot(data["bg_mu"][v_mu], data["mu_median"][v_mu],
+            color=COLOR_MU, lw=0.7, alpha=0.40)
+
+    ax.errorbar(data["bg_pi"][v_pi], data["pi_median"][v_pi],
+                yerr=data["pi_std_err"][v_pi],
+                fmt="o", color=COLOR_PI, capsize=3, capthick=1.2,
+                markersize=5, elinewidth=1.2,
+                label=r"$\pi^+$  mediana / run")
+    ax.plot(data["bg_pi"][v_pi], data["pi_median"][v_pi],
+            color=COLOR_PI, lw=0.7, alpha=0.40)
+
+    bg_th = np.logspace(np.log10(bg_range[0]), np.log10(bg_range[1]), 2000)
+    mpv = landau_mpv(bg_th, x_mm=10.0, mat=AIR)
+    v = ~np.isnan(mpv)
+    ax.plot(bg_th[v], mpv[v], color="black", lw=2, ls="--",
+            label=r"Landau MPV (Bethe-Bloch)")
+
+    ax.axvline(3.5, color="gray", ls=":", lw=1.5, alpha=0.6)
+    ax.text(3.5 * 1.05, DEDX_MIN * 1.3, "MIP\n(βγ≈3.5)",
+            color="gray", fontsize=9, va="bottom")
+
+    _setup_ax(ax, log_x=True, log_y=True)
+    ax.set_xlabel(r"$\beta\gamma = p\,/\,mc$", fontsize=13)
+    ax.set_ylabel(r"$dE/dx$  (MeV/mm)", fontsize=13)
+    ax.set_xlim(bg_range)
+    ax.set_ylim(DEDX_MIN, DEDX_MAX)
+    ax.legend(fontsize=10, **_legend_kwargs())
+    _add_info(ax)
+    fig.suptitle(
+        r"Bethe-Bloch  —  median per run with $\sigma/\sqrt{N}$ error bars  —  $\mu^+$/$\pi^+$ in BC404 (1 cm)",
+        fontsize=14, fontweight="bold", y=0.96)
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
+    _save(fig, out_dir, "bethe_bloch_overlay.png")
+
+
+# ============================================================================
 # Main
 # ============================================================================
 def main(mixed_path, out_dir):
     os.makedirs(out_dir, exist_ok=True)
 
     print("=" * 60)
-    print("Bar Strip Detector — Generating 10 plots")
+    print("Bar Strip Detector — Generating 10 + history plots")
     print("=" * 60)
 
     # Load mixed hits for Bethe-Bloch / PID plots
@@ -1084,8 +1216,14 @@ def main(mixed_path, out_dir):
     print("[10/10] eff_angulo_corregida.png")
     plot_eff_angulo_corregida(mixed_path, out_dir)
 
+    # HEP standard practice overlay (80 runs = 80 discrete points)
+    print("\n[H] bethe_bloch_overlay  (práctica estándar HEP)")
+    history_dir = os.path.join(out_dir, "history_img")
+    os.makedirs(history_dir, exist_ok=True)
+    plot_bethe_bloch_standard(mixed_path, history_dir)
+
     print("\n" + "=" * 60)
-    print(f"All 10 plots saved to: {out_dir}")
+    print(f"All 10 + H plots saved to: {out_dir}")
     print("=" * 60)
 
 

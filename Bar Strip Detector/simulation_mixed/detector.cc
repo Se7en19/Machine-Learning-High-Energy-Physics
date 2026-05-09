@@ -16,10 +16,10 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
 
 	G4double edep = aStep->GetTotalEnergyDeposit();
 	G4double stepLength = aStep->GetStepLength();
+	if(stepLength <= 0.) return false;
 
-	G4double dEdx = 0.;
-	if(stepLength > 0.)
-		dEdx = edep / stepLength;
+	G4double dEdx = edep / stepLength;
+	if(dEdx < kDEDXThreshold) return false;    // umbral 0.5 MeV/mm
 
 	G4double ekin        = aStep->GetPreStepPoint()->GetKineticEnergy();
 	G4double tof         = aStep->GetPreStepPoint()->GetGlobalTime();

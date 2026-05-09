@@ -75,6 +75,8 @@ Un evento se considera detectado cuando la partícula primaria (TrackID = 1) cum
 
 Cada paso de la partícula primaria dentro de cualquier barra activa genera una entrada en el NTuple. Eventos donde la partícula llega sólo a una capa también quedan registrados, filtrables por `layerID`.
 
+Se aplica un **umbral de 0.05 MeV/mm** en `fdEdx`: pasos con dE/dx inferior a este valor no se guardan en el NTuple. El corte está implementado tanto en Geant4 (`kDEDXThreshold` en `detector.cc`) como en el script Python (`DEDX_MIN = 0.05` en `plot_all.py`).
+
 ### Energía depositada vs. momento del haz
 
 El barrido en momento define el impulso de lanzamiento. El centellador mide dE/dx (energía por unidad de longitud), que depende de β según Bethe-Bloch. A mayor momento (partícula más rápida), menor dE/dx.
@@ -204,7 +206,7 @@ dE/dx vs momento en GeV/c (escala log en X). Por debajo de p ≈ 200 MeV/c los �
 
 ![Landau corregida](img/landau_corregida.png)
 
-Distribución de dE/dx por paso en el run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generados). La tabla insertada compara media, mediana y total de hits para cada especie. La cola asimétrica a la derecha es la firma de Landau: fluctuaciones estadísticas y δ-rays que se escapan del volumen activo de 1 cm. El umbral a 0.5 MeV/mm separa la ionización MIP típica de los pasos con deposición anómala.
+Distribución de dE/dx por paso en el run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generados). La tabla insertada compara media, mediana y total de hits para cada especie. La cola asimétrica a la derecha es la firma de Landau: fluctuaciones estadísticas y δ-rays que se escapan del volumen activo de 1 cm. El umbral en 0.05 MeV/mm (línea verde) corresponde a `kDEDXThreshold` en Geant4 y `DEDX_MIN` en Python — los hits con fdEdx inferior al umbral no se registran.
 
 ---
 
@@ -213,6 +215,59 @@ Distribución de dE/dx por paso en el run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1
 ![Overlay](img/bethe_bloch_overlay.png)
 
 Mediana de dE/dx vs βγ con banda intercuartílica (percentiles 25–75) para ambas especies. Las dos siguen la misma curva teórica de Landau MPV (línea negra). La banda de π⁺ es más estrecha a alto βγ porque llegan menos piones al centellador.
+
+---
+
+### Metodología: Cómo se construye la gráfica dE/dx vs βγ (práctica estándar HEP)
+
+Esta sección describe la construcción de la gráfica `bethe_bloch_overlay.png` siguiendo el formato típico de publicaciones HEP. La versión corregida (estándar) se guarda en `img/history_img/` y representa cada run como un punto discreto, no como un bin re-muestreado.
+
+#### Paso 1 — 80 runs, 80 momentos
+
+El barrido logarítmico define 80 momentos distintos del haz: 0.05, 0.0535, 0.0572, …, 8.74, 9.35, 10.00 GeV/c. Cada valor se inyecta en Geant4 con `/gun/momentumAmp`. El run 0 tiene **todos** sus eventos en 0.05 GeV/c, el run 1 en 0.0535 GeV/c, etc. Como el momento por run es fijo, también lo es βγ = p/mc.
+
+#### Paso 2 — Hits vs eventos
+
+Un **evento** es un disparo de partícula. Un **hit** es un paso de esa partícula dentro del centellador. Cada evento puede generar cero, uno o varios hits:
+
+- Evento sin hits → partícula absorbida en el Fe o sale fuera de cobertura geométrica
+- Evento con N hits → partícula depositó energía en N barras del centellador
+
+La columna `fdEdx` existe únicamente en los hits, no en los eventos sin detección. Por eso la mediana se calcula necesariamente sobre hits.
+
+#### Paso 3 — Mediana y barra de error por run
+
+Para cada run i (0 a 79):
+```
+Run i → hits_mu = [fdEdx_1, fdEdx_2, …, fdEdx_Nm]
+      → mu_median[i] = median(hits_mu)
+      → mu_std[i]    = std(hits_mu)
+      → mu_err[i]    = mu_std[i] / sqrt(Nm)   ← barra de error vertical
+      → 1 punto con barra (bg_mu[i], mu_median[i], ±mu_err[i])
+```
+
+Donde bg_mu[i] = p_i / M_MU (p_i en MeV/c, M_MU = 105.66 MeV/c²). El mismo procedimiento para π⁺ con M_PI = 139.57 MeV/c².
+
+La barra vertical es el **standard error of the median** (σ / √N). Mide la incertidumbre estadística de la mediana dado el número N de hits en ese run. Runs con pocas partículas detectadas (bajo bg para μ⁺, o π⁺ en todo el rango por absorción hadrónica) tienen barras grandes — menos hits, más ruido.
+
+#### Paso 4 — Curva Landau MPV (teórica)
+
+La curva negra discontinua es la predicción de Bethe-Bloch en su formulación Landau Most Probable Value, evaluada en 2000 puntos continuos de βγ. **No proviene de los datos**: es la referencia teórica calculada con los parámetros físicos del centellador BC404:
+
+- `ρ = 1.032 g/cm³`, `Z/A = 0.5424`, `I = 64.7 eV`
+- Corrección de densidad Sternheimer completa (`C = −3.7936`, `x₀ = 0.1496`, `x₁ = 2.4815`)
+- Espesor de barra: `x = 10 mm` (1 cm, grosor de cada barra)
+- El factor 0.2 en `log(xi/I) + 0.2 − β² − δ` corresponde al ajuste de Landau para la pérdida más probable
+
+#### Resultado
+
+La gráfica final contiene:
+
+| Elemento | Tipo | Origen |
+|---|---|---|
+| Puntos azules con barras | μ⁺ mediana por run (σ/√N) | Datos de simulación |
+| Puntos naranjas con barras | π⁺ mediana por run (σ/√N) | Datos de simulación |
+| Curva negra discontinua | Landau MPV | Teoría (Bethe-Bloch + Sternheimer + Landau) |
 
 ---
 
@@ -246,6 +301,8 @@ El eje X es el momento inicial p₀ del barrido logarítmico (50 MeV/c a 10 GeV/
 
 π⁺ se mantiene plano al 5–10 % en todo el rango. La probabilidad de supervivencia hadrónica no depende del momento; el ~10 % observado incluye piones que sufrieron dispersión elástica y mantuvieron TrackID = 1. Las barras de error son binomiales: σ_ε = √[ε(1 − ε) / 1000].
 
+**Definición de detección**: un evento cuenta como detectado si la partícula deja hits en **ambas capas** (Layer 1 y Layer 2), con `fdEdx ≥ 0.05 MeV/mm` en cada una. Denominador: 1000 mu+ o 1000 π+ disparados por run. Esta misma definición vale para las gráficas de eficiencia vs momento y vs ángulo.
+
 ---
 
 ### Eficiencia vs ángulo del cono
@@ -260,6 +317,8 @@ Dos líneas verticales marcan cortes geométricos:
 - θ_geom ≈ 9.4°: límite geométrico del array de barras (±50 cm). Más allá la partícula cae fuera de cobertura y la eficiencia se va a cero.
 
 μ⁺ plana hasta ~9° y luego corte seco por aceptancia geométrica. π⁺ con el mismo corte a ~9°; el piso del ~10 % lo pone la absorción hadrónica, que no depende del ángulo. Barras de error binomial incluidas.
+
+**Definición de detección**: la misma que en eficiencia vs momento — hits en ambos layers con `fdEdx ≥ 0.05 MeV/mm`. El denominador por bin de ángulo sale de la distribución geométrica del beam (MC con 2M muestras), por 1000 eventos por especie por run, acumulado sobre los runs con p > 0.7 GeV/c (donde μ⁺ ya atraviesan el Fe).
 
 ---
 
@@ -359,6 +418,8 @@ An event is considered detected when the primary particle (TrackID = 1) follows 
 5. Exits the far side of the scintillator
 
 Every step of the primary particle inside any active bar creates one NTuple entry. Events that only reach one layer are also recorded and can be filtered with `layerID`.
+
+A **threshold of 0.05 MeV/mm** is applied to `fdEdx`: steps with dE/dx below this value are not stored in the NTuple. The cut is implemented both in Geant4 (`kDEDXThreshold` in `detector.cc`) and in the Python script (`DEDX_MIN = 0.05` in `plot_all.py`).
 
 ### Deposited energy vs. beam momentum
 
@@ -489,7 +550,7 @@ dE/dx vs momentum in GeV/c (log X axis). Below p ≈ 200 MeV/c the μ⁺ and π�
 
 ![Landau corrected](img/landau_corregida.png)
 
-dE/dx per step in run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generated). The inset table compares mean, median and total hit count for each species. The asymmetric right tail is the Landau signature: statistical fluctuations and δ-rays escaping the 1 cm active volume. The 0.5 MeV/mm threshold separates typical MIP ionisation from anomalous energy-deposition steps.
+dE/dx per step in run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generated). The inset table compares mean, median and total hit count for each species. The asymmetric right tail is the Landau signature: statistical fluctuations and δ-rays escaping the 1 cm active volume. The threshold at 0.05 MeV/mm (green line) corresponds to `kDEDXThreshold` in Geant4 and `DEDX_MIN` in Python — hits with fdEdx below the threshold are not recorded.
 
 ---
 
@@ -498,6 +559,59 @@ dE/dx per step in run 45 (p₀ ≈ 1 GeV/c, ~1000 μ⁺ + ~1000 π⁺ generated)
 ![Overlay](img/bethe_bloch_overlay.png)
 
 Median dE/dx vs βγ with the interquartile range (25th–75th percentile) for both species. Both follow the same theoretical Landau MPV curve (black line). The π⁺ band is narrower at high βγ because fewer pions make it to the scintillator.
+
+---
+
+### Methodology: How the dE/dx vs βγ plot is built (standard HEP practice)
+
+This section describes how `bethe_bloch_overlay.png` is built following the typical format of HEP publications. The corrected (standard) version is saved to `img/history_img/` and represents each run as a discrete point, not as a re-binned sample.
+
+#### Step 1 — 80 runs, 80 momenta
+
+The logarithmic sweep defines 80 distinct beam momenta: 0.05, 0.0535, 0.0572, …, 8.74, 9.35, 10.00 GeV/c. Each value is injected into Geant4 via `/gun/momentumAmp`. Run 0 has **all** its events at 0.05 GeV/c, run 1 at 0.0535 GeV/c, etc. Since the momentum per run is fixed, so is βγ = p/mc.
+
+#### Step 2 — Hits vs events
+
+An **event** is a particle shot. A **hit** is a step of that particle inside the scintillator. Each event produces zero, one, or several hits:
+
+- Event with zero hits → particle absorbed in Fe or lands outside geometric coverage
+- Event with N hits → particle deposited energy in N scintillator bars
+
+The `fdEdx` column exists only in hits, not in undetected events. Therefore the median is necessarily computed over hits.
+
+#### Step 3 — Median and error bar per run
+
+For each run i (0 to 79):
+```
+Run i → mu_hits = [fdEdx_1, fdEdx_2, …, fdEdx_Nm]
+      → mu_median[i] = median(mu_hits)
+      → mu_std[i]    = std(mu_hits)
+      → mu_err[i]    = mu_std[i] / sqrt(Nm)   ← vertical error bar
+      → 1 point with bar (bg_mu[i], mu_median[i], ±mu_err[i])
+```
+
+Where bg_mu[i] = p_i / M_MU (p_i in MeV/c, M_MU = 105.66 MeV/c²). Same procedure for π⁺ with M_PI = 139.57 MeV/c².
+
+The vertical error bar is the **standard error of the median** (σ / √N). It indicates how reliable the median value is given the number N of hits in that run. Runs with few detected particles (low bg for μ⁺, or π⁺ across the full range due to hadronic absorption) have large error bars — the uncertainty reflects the actual statistics available.
+
+#### Step 4 — Landau MPV curve (theory)
+
+The dashed black curve is the Bethe-Bloch Landau Most Probable Value prediction, evaluated at 2000 continuous bg points. **It does not come from the data**: it is the theoretical reference computed with the physical parameters of BC404 scintillator:
+
+- `ρ = 1.032 g/cm³`, `Z/A = 0.5424`, `I = 64.7 eV`
+- Full Sternheimer density correction (`C = −3.7936`, `x₀ = 0.1496`, `x₁ = 2.4815`)
+- Bar thickness: `x = 10 mm` (1 cm, thickness of each bar)
+- The 0.2 factor in `log(xi/I) + 0.2 − β² − δ` corresponds to the Landau most-probable-loss adjustment
+
+#### Result
+
+The final plot contains:
+
+| Element | Type | Origin |
+|---|---|---|
+| Blue points with error bars | μ⁺ median per run (σ/√N) | Simulation data |
+| Orange points with error bars | π⁺ median per run (σ/√N) | Simulation data |
+| Black dashed curve | Landau MPV | Theory (Bethe-Bloch + Sternheimer + Landau) |
 
 ---
 
@@ -531,6 +645,8 @@ The X axis is the initial momentum p₀ from the logarithmic sweep (50 MeV/c to 
 
 π⁺ stays flat at 5–10 % across the full range. Hadronic survival probability does not depend on momentum; the ~10 % observed includes pions that underwent elastic scattering and kept TrackID = 1. Error bars are binomial: σ_ε = √[ε(1 − ε) / 1000].
 
+**Detection definition**: an event counts as detected if the particle leaves hits in **both layers** (Layer 1 and Layer 2), with `fdEdx ≥ 0.05 MeV/mm` in each. Denominator: 1000 μ⁺ or 1000 π⁺ fired per run. Same definition applies to the efficiency-vs-momentum and efficiency-vs-angle plots.
+
 ---
 
 ### Efficiency vs cone angle
@@ -545,6 +661,8 @@ Two vertical lines mark geometric cutoffs:
 - θ_geom ≈ 9.4°: geometric limit of the bar array (±50 cm). Beyond this the particle lands outside coverage and efficiency drops to zero.
 
 μ⁺ flat up to ~9° then a sharp cutoff from geometric acceptance. π⁺ with the same cutoff at ~9°; the ~10 % floor is set by hadronic absorption, which has no angular dependence. Binomial error bars included.
+
+**Detection definition**: same as in efficiency vs momentum — hits in both layers with `fdEdx ≥ 0.05 MeV/mm`. Denominator per angle bin comes from the beam's geometric distribution (MC with 2M samples) × 1000 events per species per run, accumulated over runs with p > 0.7 GeV/c (where μ⁺ already punch through the Fe).
 
 ---
 
