@@ -16,9 +16,9 @@
 <details open>
 <summary>🇪🇸 Versión en español</summary>
 
-# Bar Strip Detector — haz mixto μ⁺/π⁺ con campo Bx = 0.1 T
+# Bar Strip Detector — haz mixto μ⁺/π⁺ con campo Bx = 0.5 T
 
-La misma simulación del Bar Strip Detector pero con un campo magnético uniforme de 0.1 T apuntando en +x. No es mucho — una décima de tesla — pero basta para curvar las trayectorias de baja energía y cambiar dónde caen las partículas en las barras centelladoras.
+La misma simulación del Bar Strip Detector pero con un campo magnético uniforme de 0.5 T apuntando en +x. No es mucho — una décima de tesla — pero basta para curvar las trayectorias de baja energía y cambiar dónde caen las partículas en las barras centelladoras.
 
 ---
 
@@ -33,11 +33,11 @@ La misma simulación del Bar Strip Detector pero con un campo magnético uniform
 
 ![Configuración del detector](img/detector_layout.png)
 
-*Vista lateral: el campo magnético Bx = 0.1 T aparece en la zona azul entre la fuente y el detector. Las flechas azules indican la dirección del campo (+x). Las partículas cargadas se curvan según la fuerza de Lorentz q(v × B), aunque con 0.1 T el efecto es sutil y solo se nota en partículas lentas o de bajo momento.*
+*Vista lateral: el campo magnético Bx = 0.5 T aparece en la zona azul entre la fuente y el detector. Las flechas azules indican la dirección del campo (+x). Las partículas cargadas se curvan según la fuerza de Lorentz q(v × B), aunque con 0.1 T el efecto es sutil y solo se nota en partículas lentas o de bajo momento.*
 
 ### Mundo
 
-Vacío (G4_Galactic), 4 m × 4 m × 6 m. Campo magnético uniforme Bx = 0.1 T aplicado globalmente.
+Vacío (G4_Galactic), 4 m × 4 m × 6 m. Campo magnético uniforme Bx = 0.5 T aplicado globalmente.
 
 ### Absorbedor de hierro
 
@@ -63,7 +63,7 @@ Los centros de barra van de −47.5 cm a +47.5 cm en pasos de 5 cm.
 
 ---
 
-## Campo magnético Bx = 0.1 T
+## Campo magnético Bx = 0.5 T
 
 El campo se define en `construction.cc` dentro de `ConstructSDandField()`:
 
@@ -83,7 +83,7 @@ fieldMgr->SetMinimumEpsilonStep(1e-4);
 fieldMgr->SetMaximumEpsilonStep(1e-2);
 ```
 
-Dirección: +x (transversal al haz). Magnitud: 0.1 T.
+Dirección: +x (transversal al haz). Magnitud: 0.5 T.
 
 El radio de curvatura de una partícula relativista en un campo B es R = p / (qB). Para un muón de 100 MeV/c en 0.1 T: R ≈ 3.3 m. En la distancia de 2 m entre fuente y detector, la desviación lateral es del orden de unos centímetros — suficiente para mover un hit de una barra a otra, pero no tanto como para sacar la partícula del array completo.
 
@@ -106,7 +106,7 @@ Todos en `simulation_mixed/`.
 
 | Archivo | Qué define |
 |---|---|
-| `construction.cc / .hh` | Geometría completa + campo magnético Bx = 0.1 T |
+| `construction.cc / .hh` | Geometría completa + campo magnético Bx = 0.5 T |
 | `detector.cc / .hh` | Detector sensible: registra cada paso y llena el NTuple |
 | `generator.cc / .hh` | Fuente puntual en (0, 0, −2 m), selección 50/50 μ⁺/π⁺, dirección cónica |
 | `physics.cc / .hh` | Lista de física: G4EmStandardPhysics + FTFP_BERT + G4OpticalPhysics |
@@ -303,9 +303,9 @@ pip install numpy matplotlib uproot
 <details>
 <summary>🇬🇧 English version</summary>
 
-# Bar Strip Detector — mixed μ⁺/π⁺ beam with Bx = 0.1 T field
+# Bar Strip Detector — mixed μ⁺/π⁺ beam with Bx = 0.5 T field
 
-Same Bar Strip Detector simulation but with a uniform 0.1 T magnetic field pointing in +x. Not much — a tenth of a tesla — but enough to bend low-energy trajectories and change where particles land in the scintillator bars.
+Same Bar Strip Detector simulation but with a uniform 0.5 T magnetic field pointing in +x. Not much — a tenth of a tesla — but enough to bend low-energy trajectories and change where particles land in the scintillator bars.
 
 ---
 
@@ -320,7 +320,7 @@ Same Bar Strip Detector simulation but with a uniform 0.1 T magnetic field point
 
 ![Detector configuration](img/detector_layout.png)
 
-*Side view: the Bx = 0.1 T magnetic field is shown in the blue region between source and detector. Blue arrows indicate field direction (+x). Charged particles curve according to the Lorentz force q(v × B), though at 0.1 T the effect is subtle and only noticeable for slow or low-momentum particles.*
+*Side view: the Bx = 0.5 T magnetic field is shown in the blue region between source and detector. Blue arrows indicate field direction (+x). Charged particles curve according to the Lorentz force q(v × B), though at 0.1 T the effect is subtle and only noticeable for slow or low-momentum particles.*
 
 ### World volume
 
@@ -350,7 +350,7 @@ Bar centres from −47.5 cm to +47.5 cm in 5 cm steps.
 
 ---
 
-## Magnetic field Bx = 0.1 T
+## Magnetic field Bx = 0.5 T
 
 The field is defined in `construction.cc` inside `ConstructSDandField()`:
 
@@ -370,7 +370,7 @@ fieldMgr->SetMinimumEpsilonStep(1e-4);
 fieldMgr->SetMaximumEpsilonStep(1e-2);
 ```
 
-Direction: +x (transverse to the beam). Magnitude: 0.1 T.
+Direction: +x (transverse to the beam). Magnitude: 0.5 T.
 
 The curvature radius of a relativistic particle in field B is R = p / (qB). For a 100 MeV/c muon in 0.1 T: R ≈ 3.3 m. Over the 2 m distance from source to detector, the lateral deflection is on the order of a few centimetres — enough to shift a hit from one bar to another, but not enough to knock the particle out of the array entirely.
 
@@ -393,7 +393,7 @@ All in `simulation_mixed/`.
 
 | File | What it defines |
 |---|---|
-| `construction.cc / .hh` | Full geometry + Bx = 0.1 T magnetic field |
+| `construction.cc / .hh` | Full geometry + Bx = 0.5 T magnetic field |
 | `detector.cc / .hh` | Sensitive detector: records each step and fills the NTuple |
 | `generator.cc / .hh` | Point source at (0, 0, −2 m), 50/50 μ⁺/π⁺, cone direction |
 | `physics.cc / .hh` | Physics list: G4EmStandardPhysics + FTFP_BERT + G4OpticalPhysics |
@@ -463,7 +463,7 @@ The 80 ROOT files are written to `Classifier/data/mixed/output_run0.root` … `o
 
 ![Detector layout](img/detector_layout.png)
 
-The Bx = 0.1 T field is shown in the blue region with horizontal arrows. The effect is subtle at a glance in this diagram — we're not drawing curved trajectories here, just the geometry. To see the field effect you need to look at hit distributions.
+The Bx = 0.5 T field is shown in the blue region with horizontal arrows. The effect is subtle at a glance in this diagram — we're not drawing curved trajectories here, just the geometry. To see the field effect you need to look at hit distributions.
 
 ---
 
@@ -501,7 +501,7 @@ Run 45 (p₀ ≈ 1 GeV/c). The asymmetric right tail is the Landau signature: st
 
 ### Overlay with IQR band
 
-![Overlay](img/bethe_bloch_overlay.png)
+![Overlay](img/overlay_iqr_Bfield05T.png)
 
 Median dE/dx vs βγ with interquartile band for both species. The π⁺ band is narrower at high βγ because fewer pions make it through.
 
@@ -509,7 +509,7 @@ Median dE/dx vs βγ with interquartile band for both species. The π⁺ band is
 
 ### Combined PID μ⁺ vs π⁺
 
-![PID](img/pid_combined.png)
+![PID](img/pid_combined_Bfield05T.png)
 
 μ⁺ and π⁺ overlaid in the dE/dx vs p plane. The muon signal is much denser — hadronic absorption leaves only ~10 % of pions detectable.
 
@@ -525,7 +525,7 @@ Median dE/dx vs βγ with interquartile band for both species. The π⁺ band is
 
 ### Detection efficiency vs momentum
 
-![Corrected efficiency vs p₀](img/eff_momento_corregida.png)
+![Corrected efficiency vs p₀](img/eff_momento_Bfield05T.png)
 
 μ⁺ rises from 0 to ≈ 89 % between 500 and 700 MeV/c — the range threshold in 70 cm of iron. Three regimes:
 
@@ -541,7 +541,7 @@ With B = 0.1 T, trajectories curve inside the iron, which can slightly change th
 
 ### Efficiency vs cone angle
 
-![Corrected efficiency vs θ](img/eff_angulo_corregida.png)
+![Corrected efficiency vs θ](img/eff_angulo_Bfield05T.png)
 
 θ comes from the `ConeAngle` column. Two geometric cutoffs:
 
